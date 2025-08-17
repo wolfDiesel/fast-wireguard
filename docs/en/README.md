@@ -80,9 +80,41 @@ which fastwg
 
 **Important:** All commands require root privileges (sudo).
 
+### First-time setup
+
+After installation, you need to either scan existing configurations or create a new server from scratch:
+
+#### Option 1: Scan existing WireGuard configurations
+If you already have WireGuard server configurations:
+
+```bash
+# Scan and import existing configurations
+sudo fastwg scan
+```
+
+#### Option 2: Create server from scratch
+If you want to set up a new WireGuard server:
+
+```bash
+# Initialize server configuration
+sudo fastwg init-server
+
+# Set external host (your server's public IP and port)
+sudo fastwg sethost YOUR_PUBLIC_IP:51820
+
+# Start the server
+sudo fastwg start
+```
+
 ### Basic commands
 
 ```bash
+# Initialize server configuration (create from scratch)
+sudo fastwg init-server
+
+# Set external host (IP:port)
+sudo fastwg sethost IP:PORT
+
 # Scan existing configurations
 sudo fastwg scan
 
@@ -104,17 +136,59 @@ sudo fastwg cat client_name
 # List all clients
 sudo fastwg list
 
+# List all clients (including inactive/blocked)
+sudo fastwg list --all
+
 # WireGuard server status
 sudo fastwg status
+
+# Start WireGuard server
+sudo fastwg start
+
+# Stop WireGuard server
+sudo fastwg stop
+
+# Restart WireGuard server
+sudo fastwg restart
+
+# Reload server configuration
+sudo fastwg reload
 ```
 
 ### Usage examples
+
+#### Setting up a new server from scratch
+
+```bash
+# Initialize server configuration
+sudo fastwg init-server
+# ✓ Server configuration initialized successfully
+#   Interface: wg0
+#   Port: 51820
+#   Network: 10.42.42.0/24
+#   DNS: 8.8.8.8
+#
+# Next steps:
+#   1. Set external host: fastwg sethost <your_ip>:<port>
+#   2. Start server: fastwg start
+#   3. Create clients: fastwg create <client_name>
+
+# Set external host
+sudo fastwg sethost 203.0.113.1:51820
+# ✓ Host set successfully
+
+# Start the server
+sudo fastwg start
+# ✓ Server started successfully
+```
+
+#### Creating and managing clients
 
 ```bash
 # Creating a client
 sudo fastwg create john
 # ✓ Client 'john' successfully created
-#   IP address: 10.0.0.2
+#   IP address: 10.42.42.2
 #   Configuration: ./wireguard/configs/john.conf
 
 # Viewing client list
@@ -122,23 +196,58 @@ sudo fastwg list
 # +--------+------------+----------------------+----------------------+----------------------+
 # | Name   | IP Address | Status               | Last Connection     | Created             |
 # +--------+------------+----------------------+----------------------+----------------------+
-# | john   | 10.0.0.2   | Active, Connected    | 2024-01-15 14:30:25 | 2024-01-15 14:25:10 |
+# | john   | 10.42.42.2 | Active, Connected    | 2024-01-15 14:30:25 | 2024-01-15 14:25:10 |
 # +--------+------------+----------------------+----------------------+----------------------+
 
 # Viewing client configuration
 sudo fastwg cat john
 # [Interface]
 # PrivateKey = abc123...
-# Address = 10.0.0.2
+# Address = 10.42.42.2/24
 # DNS = 8.8.8.8
-# MTU = 1420
 # 
 # [Peer]
 # PublicKey = xyz789...
-# Endpoint = :51820
+# Endpoint = 203.0.113.1:51820
 # AllowedIPs = 0.0.0.0/0
-# PersistentKeepalive = 25
+# PersistentKeepalive = 15
 ```
+
+#### Server management
+
+```bash
+# Check server status
+sudo fastwg status
+# ✓ WireGuard is active
+# Active interfaces:
+# interface: wg0
+#   public key: xyz789...
+#   private key: (hidden)
+#   listening port: 51820
+
+# Restart server
+sudo fastwg restart
+# ✓ Server restarted successfully
+
+# Reload configuration
+sudo fastwg reload
+# ✓ Configuration reloaded successfully
+```
+
+## File locations
+
+### Client configurations and keys
+All client configurations and keys are stored in the project directory:
+
+- **Client configurations**: `./wireguard/configs/` (e.g., `./wireguard/configs/john.conf`)
+- **Client private keys**: `./wireguard/keys/` (e.g., `./wireguard/keys/john_private.key`)
+- **Client public keys**: `./wireguard/keys/` (e.g., `./wireguard/keys/john_public.key`)
+
+**Important:** Client files are NOT scattered across the system - they are all organized in the project directory for easy management and backup.
+
+### Server configuration
+- **Server configuration**: `/etc/wireguard/wg0.conf` (standard WireGuard location)
+- **Database**: `./wireguard.db` (SQLite database with client and server information)
 
 ## Project structure
 
@@ -157,8 +266,9 @@ fast-wireguard/
 │   │   └── server.py
 │   └── utils/
 ├── wireguard/
-│   ├── keys/
-│   └── configs/
+│   ├── keys/           # Client private and public keys
+│   └── configs/        # Client configuration files
+├── wireguard.db        # SQLite database
 ├── fastwg.py
 ├── setup.py
 ├── requirements.txt
