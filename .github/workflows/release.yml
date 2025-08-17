@@ -8,6 +8,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - uses: actions/checkout@v4
@@ -39,5 +41,5 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          ./dist/fastwg-${{ github.ref_name }}.tar.gz
-          ./dist/fastwg-${{ github.ref_name }}-py3-none-any.whl
+          dist/fastwg-${{ github.ref_name }}.tar.gz
+          dist/fastwg-${{ github.ref_name }}-py3-none-any.whl
