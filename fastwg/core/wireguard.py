@@ -100,7 +100,11 @@ class WireGuardManager:
                 elif line.startswith("#"):
                     if current_section == "peer" and current_client is not None:
                         comment = line[1:].strip()
-                        if comment and not comment.startswith(" ") and not comment.startswith("\t"):
+                        if (
+                            comment
+                            and not comment.startswith(" ")
+                            and not comment.startswith("\t")
+                        ):
                             current_client["Name"] = comment
                 elif current_section == "interface":
                     if "=" in line:
@@ -186,7 +190,9 @@ class WireGuardManager:
 
         server_config = self.db.get_server_config()
         if not server_config:
-            print("Server configuration not found. Run fastwg scan first to import existing configurations.")
+            print(
+                "Server configuration not found. Run fastwg scan first to import existing configurations."
+            )
             return None
 
         private_key = self._generate_private_key()
@@ -768,7 +774,10 @@ DNS = {dns}
             result_down = subprocess.run(
                 ["wg-quick", "down", interface], capture_output=True, text=True
             )
-            if result_down.returncode != 0 and "is not a WireGuard interface" not in result_down.stderr:
+            if (
+                result_down.returncode != 0
+                and "is not a WireGuard interface" not in result_down.stderr
+            ):
                 print(f"Warning when stopping interface: {result_down.stderr}")
 
             result_up = subprocess.run(
