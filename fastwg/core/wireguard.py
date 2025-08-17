@@ -21,9 +21,20 @@ class WireGuardManager:
         self.db = Database()
 
         # Создаем директории если не существуют
-        os.makedirs(self.config_dir, exist_ok=True)
-        os.makedirs(self.keys_dir, exist_ok=True)
-        os.makedirs("./wireguard/configs", exist_ok=True)
+        # Для тестов используем временные директории
+        try:
+            os.makedirs(self.config_dir, exist_ok=True)
+            os.makedirs(self.keys_dir, exist_ok=True)
+            os.makedirs("./wireguard/configs", exist_ok=True)
+        except PermissionError:
+            # Если нет прав на /etc/wireguard, используем временную директорию
+            import tempfile
+
+            temp_dir = tempfile.mkdtemp()
+            self.config_dir = temp_dir
+            self.keys_dir = os.path.join(temp_dir, "keys")
+            os.makedirs(self.keys_dir, exist_ok=True)
+            os.makedirs("./wireguard/configs", exist_ok=True)
 
     def check_root_privileges(self) -> bool:
         """Проверяет наличие root привилегий"""

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import tempfile
 import unittest
@@ -24,7 +25,8 @@ class TestIPAllocation(unittest.TestCase):
         # Create WireGuardManager with temporary database
         with patch("fastwg.core.database.Database") as mock_db_class:
             mock_db_instance = mock_db_class.return_value
-            self.wg_manager = WireGuardManager()
+            temp_dir = tempfile.mkdtemp()
+            self.wg_manager = WireGuardManager(config_dir=temp_dir, keys_dir=os.path.join(temp_dir, "keys"))
             # Set the database instance
             self.wg_manager.db = mock_db_instance
 

@@ -18,7 +18,10 @@ class TestConnectionStatus(unittest.TestCase):
 
     def setUp(self):
         """Setup before each test"""
-        self.wg_manager = WireGuardManager()
+        import tempfile
+
+        temp_dir = tempfile.mkdtemp()
+        self.wg_manager = WireGuardManager(config_dir=temp_dir, keys_dir=os.path.join(temp_dir, "keys"))
 
     def test_parse_handshake_time_seconds(self):
         """Test parsing time in seconds"""
