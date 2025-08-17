@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 # Add the project root to the path
-sys.path.insert(0, '.')
+sys.path.insert(0, ".")
 
 from fastwg.core.wireguard import WireGuardManager
 from fastwg.models import Server
@@ -18,11 +18,11 @@ class TestIPAllocation(unittest.TestCase):
     def setUp(self):
         """Set up test environment"""
         # Create temporary database
-        self.temp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+        self.temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         self.temp_db.close()
-        
+
         # Create WireGuardManager with temporary database
-        with patch('fastwg.core.database.Database') as mock_db_class:
+        with patch("fastwg.core.database.Database") as mock_db_class:
             mock_db_instance = mock_db_class.return_value
             self.wg_manager = WireGuardManager()
             # Set the database instance
@@ -31,6 +31,7 @@ class TestIPAllocation(unittest.TestCase):
     def tearDown(self):
         """Clean up test environment"""
         import os
+
         if os.path.exists(self.temp_db.name):
             os.unlink(self.temp_db.name)
 
@@ -41,20 +42,20 @@ class TestIPAllocation(unittest.TestCase):
             id=1,
             interface="wg0",
             private_key="test_private_key",
-            public_key="test_public_key", 
+            public_key="test_public_key",
             address="10.42.42.1/24",  # This has host bits set
             port=51820,
             dns="8.8.8.8",
             mtu=1420,
-            config_path="/etc/wireguard/wg0.conf"
+            config_path="/etc/wireguard/wg0.conf",
         )
-        
+
         # Mock database methods
-        with patch.object(self.wg_manager.db, 'get_server_config', return_value=server_config):
-            with patch.object(self.wg_manager.db, 'get_all_clients', return_value=[]):
+        with patch.object(self.wg_manager.db, "get_server_config", return_value=server_config):
+            with patch.object(self.wg_manager.db, "get_all_clients", return_value=[]):
                 # Should not raise ValueError
                 next_ip = self.wg_manager._get_next_ip()
-                
+
                 # Should return a valid IP from the network
                 self.assertTrue(next_ip.startswith("10.42.42."))
                 self.assertNotEqual(next_ip, "10.42.42.1")  # Should not be server IP
@@ -64,11 +65,11 @@ class TestIPAllocation(unittest.TestCase):
     def test_get_next_ip_without_server_config(self):
         """Test IP allocation when no server config exists"""
         # Mock database methods
-        with patch.object(self.wg_manager.db, 'get_server_config', return_value=None):
-            with patch.object(self.wg_manager.db, 'get_all_clients', return_value=[]):
+        with patch.object(self.wg_manager.db, "get_server_config", return_value=None):
+            with patch.object(self.wg_manager.db, "get_all_clients", return_value=[]):
                 # Should use default network
                 next_ip = self.wg_manager._get_next_ip()
-                
+
                 # Should return a valid IP from default network
                 self.assertTrue(next_ip.startswith("10.0.0."))
                 self.assertNotEqual(next_ip, "10.0.0.0")  # Should not be network address
@@ -78,7 +79,7 @@ class TestIPAllocation(unittest.TestCase):
         """Test that IP allocation avoids existing client IPs"""
         from fastwg.models import Client
         from datetime import datetime
-        
+
         # Mock server config
         server_config = Server(
             id=1,
@@ -89,9 +90,9 @@ class TestIPAllocation(unittest.TestCase):
             port=51820,
             dns="8.8.8.8",
             mtu=1420,
-            config_path="/etc/wireguard/wg0.conf"
+            config_path="/etc/wireguard/wg0.conf",
         )
-        
+
         # Mock existing clients
         existing_clients = [
             Client(
@@ -103,26 +104,26 @@ class TestIPAllocation(unittest.TestCase):
                 is_active=True,
                 is_blocked=False,
                 created_at=datetime.now(),
-                last_seen=None
+                last_seen=None,
             ),
             Client(
                 id=2,
-                name="client2", 
+                name="client2",
                 public_key="key2",
                 private_key="priv2",
                 ip_address="10.42.42.20",
                 is_active=True,
                 is_blocked=False,
                 created_at=datetime.now(),
-                last_seen=None
-            )
+                last_seen=None,
+            ),
         ]
-        
+
         # Mock database methods
-        with patch.object(self.wg_manager.db, 'get_server_config', return_value=server_config):
-            with patch.object(self.wg_manager.db, 'get_all_clients', return_value=existing_clients):
+        with patch.object(self.wg_manager.db, "get_server_config", return_value=server_config):
+            with patch.object(self.wg_manager.db, "get_all_clients", return_value=existing_clients):
                 next_ip = self.wg_manager._get_next_ip()
-                
+
                 # Should not return existing IPs
                 self.assertNotEqual(next_ip, "10.42.42.10")
                 self.assertNotEqual(next_ip, "10.42.42.20")
@@ -130,5 +131,5 @@ class TestIPAllocation(unittest.TestCase):
                 self.assertTrue(next_ip.startswith("10.42.42."))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -250,13 +250,13 @@ class WireGuardManager:
         result = []
         for client in clients:
             is_connected = client.public_key in active_connections
-            
+
             # Обновляем last_seen для подключенных клиентов
             if is_connected:
                 self.db.update_client_last_seen(client.name, datetime.now())
                 # Обновляем объект клиента для отображения
                 client.last_seen = datetime.now()
-            
+
             result.append(
                 {
                     "name": client.name,
@@ -307,7 +307,7 @@ class WireGuardManager:
 
         # Добавляем IP сервера в исключения
         if server_config:
-            server_ip = server_config.address.split('/')[0]  # Убираем маску
+            server_ip = server_config.address.split("/")[0]  # Убираем маску
             existing_ips.add(server_ip)
 
         # Ищем свободный IP
