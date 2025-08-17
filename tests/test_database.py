@@ -16,24 +16,24 @@ from fastwg.models.server import Server  # noqa: E402
 
 
 class TestDatabase(unittest.TestCase):
-    """Тесты для работы с базой данных"""
+    """Tests for database operations"""
 
     def setUp(self):
-        """Настройка перед каждым тестом"""
-        # Создаем временную базу данных
+        """Setup before each test"""
+        # Create temporary database
         self.temp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
         self.temp_db.close()
         self.db = Database(db_path=self.temp_db.name)
         self.db._init_database()
 
     def tearDown(self):
-        """Очистка после каждого теста"""
-        # Удаляем временную базу данных
+        """Cleanup after each test"""
+        # Remove temporary database
         os.unlink(self.temp_db.name)
 
     def test_add_and_get_client(self):
-        """Тест добавления и получения клиента"""
-        # Создаем тестового клиента
+        """Test adding and getting client"""
+        # Create test client
         client = Client(
             id=1,
             name="test_client",
@@ -46,26 +46,26 @@ class TestDatabase(unittest.TestCase):
             last_seen=None,
         )
 
-        # Добавляем клиента
+        # Add client
         self.db.add_client(client)
 
-        # Получаем клиента
+        # Get client
         retrieved_client = self.db.get_client("test_client")
 
-        # Проверяем что клиент получен правильно
+        # Check that client was retrieved correctly
         self.assertIsNotNone(retrieved_client)
         self.assertEqual(retrieved_client.name, "test_client")
         self.assertEqual(retrieved_client.public_key, "test_public_key")
         self.assertEqual(retrieved_client.ip_address, "10.0.0.2")
 
     def test_get_nonexistent_client(self):
-        """Тест получения несуществующего клиента"""
+        """Test getting non-existent client"""
         client = self.db.get_client("nonexistent")
         self.assertIsNone(client)
 
     def test_get_all_clients(self):
-        """Тест получения всех клиентов"""
-        # Добавляем несколько клиентов
+        """Test getting all clients"""
+        # Add several clients
         client1 = Client(
             id=1,
             name="client1",
@@ -92,10 +92,10 @@ class TestDatabase(unittest.TestCase):
         self.db.add_client(client1)
         self.db.add_client(client2)
 
-        # Получаем всех клиентов
+        # Get all clients
         all_clients = self.db.get_all_clients()
 
-        # Проверяем количество
+        # Check count
         self.assertEqual(len(all_clients), 2)
 
         # Проверяем что оба клиента есть
@@ -104,8 +104,8 @@ class TestDatabase(unittest.TestCase):
         self.assertIn("client2", client_names)
 
     def test_delete_client(self):
-        """Тест удаления клиента"""
-        # Добавляем клиента
+        """Test deleting client"""
+        # Add client
         client = Client(
             id=1,
             name="to_delete",
@@ -119,18 +119,18 @@ class TestDatabase(unittest.TestCase):
         )
         self.db.add_client(client)
 
-        # Проверяем что клиент добавлен
+        # Check that client was added
         self.assertIsNotNone(self.db.get_client("to_delete"))
 
-        # Удаляем клиента
+        # Delete client
         self.db.delete_client("to_delete")
 
-        # Проверяем что клиент удален
+        # Check that client was deleted
         self.assertIsNone(self.db.get_client("to_delete"))
 
     def test_update_client_status(self):
-        """Тест обновления статуса клиента"""
-        # Добавляем клиента
+        """Test updating client status"""
+        # Add client
         client = Client(
             id=1,
             name="test_client",
@@ -144,19 +144,19 @@ class TestDatabase(unittest.TestCase):
         )
         self.db.add_client(client)
 
-        # Обновляем статус
+        # Update status
         self.db.update_client_status("test_client", is_active=False, is_blocked=True)
 
-        # Получаем обновленного клиента
+        # Get updated client
         updated_client = self.db.get_client("test_client")
 
-        # Проверяем изменения
+        # Check changes
         self.assertFalse(updated_client.is_active)
         self.assertTrue(updated_client.is_blocked)
 
     def test_update_client_last_seen(self):
-        """Тест обновления времени последнего подключения"""
-        # Добавляем клиента
+        """Test updating client last seen time"""
+        # Add client
         client = Client(
             id=1,
             name="test_client",
@@ -170,19 +170,19 @@ class TestDatabase(unittest.TestCase):
         )
         self.db.add_client(client)
 
-        # Обновляем время последнего подключения
+        # Update last seen time
         test_time = datetime.now()
         self.db.update_client_last_seen("test_client", test_time)
 
-        # Получаем обновленного клиента
+        # Get updated client
         updated_client = self.db.get_client("test_client")
 
-        # Проверяем что время обновлено
+        # Check that time was updated
         self.assertEqual(updated_client.last_seen, test_time)
 
     def test_save_and_get_server_config(self):
-        """Тест сохранения и получения конфигурации сервера"""
-        # Создаем конфигурацию сервера
+        """Test saving and getting server configuration"""
+        # Create server configuration
         server = Server(
             id=1,
             interface="wg0",
@@ -195,13 +195,13 @@ class TestDatabase(unittest.TestCase):
             config_path="/etc/wireguard/wg0.conf",
         )
 
-        # Сохраняем конфигурацию
+        # Save configuration
         self.db.save_server_config(server)
 
-        # Получаем конфигурацию
+        # Get configuration
         retrieved_server = self.db.get_server_config()
 
-        # Проверяем что конфигурация получена правильно
+        # Check that configuration was retrieved correctly
         self.assertIsNotNone(retrieved_server)
         self.assertEqual(retrieved_server.interface, "wg0")
         self.assertEqual(retrieved_server.private_key, "server_private_key")
@@ -209,12 +209,12 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(retrieved_server.port, 51820)
 
     def test_get_server_config_nonexistent(self):
-        """Тест получения несуществующей конфигурации сервера"""
+        """Test getting non-existent server configuration"""
         server = self.db.get_server_config()
         self.assertIsNone(server)
 
     def test_client_to_dict(self):
-        """Тест сериализации клиента в словарь"""
+        """Test client serialization to dictionary"""
         client = Client(
             id=1,
             name="test_client",
@@ -229,7 +229,7 @@ class TestDatabase(unittest.TestCase):
 
         client_dict = client.to_dict()
 
-        # Проверяем что все поля присутствуют
+        # Check that all fields are present
         self.assertEqual(client_dict["name"], "test_client")
         self.assertEqual(client_dict["public_key"], "test_public_key")
         self.assertEqual(client_dict["ip_address"], "10.0.0.2")
@@ -237,7 +237,7 @@ class TestDatabase(unittest.TestCase):
         self.assertFalse(client_dict["is_blocked"])
 
     def test_server_to_dict(self):
-        """Тест сериализации сервера в словарь"""
+        """Test server serialization to dictionary"""
         server = Server(
             id=1,
             interface="wg0",
@@ -252,7 +252,7 @@ class TestDatabase(unittest.TestCase):
 
         server_dict = server.to_dict()
 
-        # Проверяем что все поля присутствуют
+        # Check that all fields are present
         self.assertEqual(server_dict["interface"], "wg0")
         self.assertEqual(server_dict["private_key"], "server_private_key")
         self.assertEqual(server_dict["address"], "10.0.0.0/24")

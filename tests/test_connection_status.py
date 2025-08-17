@@ -14,14 +14,14 @@ from fastwg.core.wireguard import WireGuardManager  # noqa: E402
 
 
 class TestConnectionStatus(unittest.TestCase):
-    """Тесты для определения статуса подключения клиентов"""
+    """Tests for determining client connection status"""
 
     def setUp(self):
-        """Настройка перед каждым тестом"""
+        """Setup before each test"""
         self.wg_manager = WireGuardManager()
 
     def test_parse_handshake_time_seconds(self):
-        """Тест парсинга времени в секундах"""
+        """Test parsing time in seconds"""
         time_str = "30 seconds ago"
         parsed_time = self.wg_manager._parse_handshake_time(time_str)
         expected_diff = timedelta(seconds=30)
@@ -31,60 +31,60 @@ class TestConnectionStatus(unittest.TestCase):
         self.assertLess(abs(actual_diff - expected_diff).total_seconds(), 5)
 
     def test_parse_handshake_time_minutes(self):
-        """Тест парсинга времени в минутах"""
+        """Test parsing time in minutes"""
         time_str = "2 minutes ago"
         parsed_time = self.wg_manager._parse_handshake_time(time_str)
         expected_diff = timedelta(minutes=2)
         actual_diff = datetime.now() - parsed_time
 
-        # Проверяем с погрешностью в 5 секунд
+        # Check with 5 second tolerance
         self.assertLess(abs(actual_diff - expected_diff).total_seconds(), 5)
 
     def test_parse_handshake_time_hours(self):
-        """Тест парсинга времени в часах"""
+        """Test parsing time in hours"""
         time_str = "1 hour, 30 minutes ago"
         parsed_time = self.wg_manager._parse_handshake_time(time_str)
         expected_diff = timedelta(hours=1, minutes=30)
         actual_diff = datetime.now() - parsed_time
 
-        # Проверяем с погрешностью в 10 секунд
+        # Check with 10 second tolerance
         self.assertLess(abs(actual_diff - expected_diff).total_seconds(), 10)
 
     def test_parse_handshake_time_days(self):
-        """Тест парсинга времени в днях"""
+        """Test parsing time in days"""
         time_str = "2 days, 5 hours ago"
         parsed_time = self.wg_manager._parse_handshake_time(time_str)
         expected_diff = timedelta(days=2, hours=5)
         actual_diff = datetime.now() - parsed_time
 
-        # Проверяем с погрешностью в 60 секунд
+        # Check with 60 second tolerance
         self.assertLess(abs(actual_diff - expected_diff).total_seconds(), 60)
 
     def test_is_peer_connected_no_handshake(self):
-        """Тест: peer без handshake не подключен"""
+        """Test: peer without handshake is not connected"""
         result = self.wg_manager._is_peer_connected(has_handshake=False, handshake_time=None)
         self.assertFalse(result)
 
     def test_is_peer_connected_recent_handshake(self):
-        """Тест: peer с недавним handshake подключен"""
+        """Test: peer with recent handshake is connected"""
         recent_time = datetime.now() - timedelta(minutes=30)
         result = self.wg_manager._is_peer_connected(has_handshake=True, handshake_time=recent_time)
         self.assertTrue(result)
 
     def test_is_peer_connected_old_handshake(self):
-        """Тест: peer со старым handshake не подключен"""
+        """Test: peer with old handshake is not connected"""
         old_time = datetime.now() - timedelta(hours=2)
         result = self.wg_manager._is_peer_connected(has_handshake=True, handshake_time=old_time)
         self.assertFalse(result)
 
     def test_is_peer_connected_exact_hour(self):
-        """Тест: peer с handshake ровно час назад не подключен (граничный случай)"""
+        """Test: peer with handshake exactly 1 hour ago is not connected (edge case)"""
         exact_hour_time = datetime.now() - timedelta(hours=1)
         result = self.wg_manager._is_peer_connected(has_handshake=True, handshake_time=exact_hour_time)
         self.assertFalse(result)
 
     def test_parse_wg_show_output_simple(self):
-        """Тест парсинга простого вывода wg show"""
+        """Test parsing simple wg show output"""
         wg_output = """interface: wg0
   public key: test_key
   private key: (hidden)
@@ -106,7 +106,7 @@ peer: peer2_key=
         self.assertEqual(active_peers, expected)
 
     def test_parse_wg_show_output_complex(self):
-        """Тест парсинга сложного вывода wg show с разными временами"""
+        """Test parsing complex wg show output with different times"""
         wg_output = """interface: wg0
   public key: test_key
   private key: (hidden)
@@ -129,12 +129,12 @@ peer: no_handshake_peer=
 
         active_peers = self.wg_manager._parse_wg_show_output(wg_output)
 
-        # Ожидаем только recent_peer= как активный
+        # Expect only recent_peer= as active
         expected = {"recent_peer="}
         self.assertEqual(active_peers, expected)
 
     def test_parse_wg_show_output_real_data(self):
-        """Тест с реальными данными из пользовательского примера"""
+        """Test with real data from user example"""
         real_wg_output = """interface: wg0
   public key: 6kW4UBw3mEuRBKkpErw7v7SnS335oIlp8Ewk9/6z8zE=
   private key: (hidden)
@@ -172,7 +172,7 @@ peer: EYCoo9B7umIJt4tm6noblQsyI6IhiH98bWlxDYyv8QY=
 
         active_peers = self.wg_manager._parse_wg_show_output(real_wg_output)
 
-        # Ожидаем только 3 активных peers (с handshake < 1 часа)
+        # Expect only 3 active peers (with handshake < 1 hour)
         expected = {
             "wzJOQNhUK49H2yAHEGcQNsuEX0t98QMiMpnE7vndRzI=",
             "8wZQAnND4Gr4QfbYbGIIIhgmtyIpZBtQ3F51TCkSFw8=",
@@ -182,8 +182,8 @@ peer: EYCoo9B7umIJt4tm6noblQsyI6IhiH98bWlxDYyv8QY=
 
     @patch("subprocess.run")
     def test_get_active_connections_mock(self, mock_run):
-        """Тест получения активных подключений с моком subprocess"""
-        # Мокаем вывод wg show
+        """Test getting active connections with subprocess mock"""
+        # Mock wg show output
         mock_result = MagicMock()
         mock_result.returncode = 0
         mock_result.stdout = """interface: wg0
@@ -204,22 +204,22 @@ peer: inactive_peer=
 
         active_peers = self.wg_manager._get_active_connections()
 
-        # Проверяем что subprocess.run был вызван
+        # Check that subprocess.run was called
         mock_run.assert_called_once_with(["wg", "show"], capture_output=True, text=True)
 
-        # Проверяем результат
+        # Check result
         expected = {"active_peer="}
         self.assertEqual(active_peers, expected)
 
     @patch("subprocess.run")
     def test_get_active_connections_error(self, mock_run):
-        """Тест обработки ошибки при получении активных подключений"""
-        # Мокаем ошибку
+        """Test error handling when getting active connections"""
+        # Mock error
         mock_run.side_effect = Exception("Command not found")
 
         active_peers = self.wg_manager._get_active_connections()
 
-        # При ошибке должен вернуться пустой set
+        # Should return empty set on error
         self.assertEqual(active_peers, set())
 
 
