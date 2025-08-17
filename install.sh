@@ -95,6 +95,72 @@ check_python() {
     fi
 }
 
+# Проверка WireGuard
+check_wireguard() {
+    print_info "Проверка WireGuard..."
+    
+    if ! command -v wg &> /dev/null; then
+        print_warning "WireGuard не найден в системе"
+        print_info "FastWG требует установленный WireGuard для работы"
+        
+        read -p "Установить WireGuard? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_info "Установка WireGuard..."
+            
+            case $OS in
+                *"Ubuntu"*|*"Debian"*)
+                    apt update
+                    apt install -y wireguard wireguard-tools
+                    ;;
+                *"Fedora"*|*"Red Hat"*|*"CentOS"*)
+                    dnf install -y wireguard-tools
+                    ;;
+                *"Arch"*)
+                    pacman -S --noconfirm wireguard-tools
+                    ;;
+                *)
+                    print_error "Неизвестный дистрибутив: $OS"
+                    print_info "Установите WireGuard вручную:"
+                    print_info "  Ubuntu/Debian: apt install wireguard wireguard-tools"
+                    print_info "  Fedora/RHEL: dnf install wireguard-tools"
+                    print_info "  Arch: pacman -S wireguard-tools"
+                    exit 1
+                    ;;
+            esac
+            
+            print_success "WireGuard установлен"
+        else
+            print_error "WireGuard не установлен. FastWG не может работать без WireGuard"
+            exit 1
+        fi
+    else
+        print_success "WireGuard найден"
+        
+        # Проверяем wg-quick
+        if ! command -v wg-quick &> /dev/null; then
+            print_warning "wg-quick не найден"
+            print_info "Установка wireguard-tools..."
+            
+            case $OS in
+                *"Ubuntu"*|*"Debian"*)
+                    apt install -y wireguard-tools
+                    ;;
+                *"Fedora"*|*"Red Hat"*|*"CentOS"*)
+                    dnf install -y wireguard-tools
+                    ;;
+                *"Arch"*)
+                    pacman -S --noconfirm wireguard-tools
+                    ;;
+            esac
+            
+            print_success "wireguard-tools установлен"
+        else
+            print_success "wg-quick найден"
+        fi
+    fi
+}
+
 # Клонирование репозитория
 clone_repo() {
     print_info "Клонирование репозитория..."
@@ -159,28 +225,7 @@ verify_installation() {
     fi
 }
 
-# Создание алиаса
-create_alias() {
-    print_info "Создание алиаса..."
-    
-    ALIAS_LINE='alias wg="sudo fastwg"'
-    
-    if [[ -f ~/.bashrc ]]; then
-        if ! grep -q "$ALIAS_LINE" ~/.bashrc; then
-            echo "$ALIAS_LINE" >> ~/.bashrc
-            print_success "Алиас добавлен в ~/.bashrc"
-        else
-            print_info "Алиас уже существует"
-        fi
-    fi
-    
-    if [[ -f ~/.zshrc ]]; then
-        if ! grep -q "$ALIAS_LINE" ~/.zshrc; then
-            echo "$ALIAS_LINE" >> ~/.zshrc
-            print_success "Алиас добавлен в ~/.zshrc"
-        fi
-    fi
-}
+
 
 
 
@@ -212,11 +257,11 @@ main() {
     
     install_dependencies
     check_python
+    check_wireguard
     clone_repo
     install_python_deps
     install_fastwg
     verify_installation
-    create_alias
     
     # Автоматический скан после установки
     auto_scan_after_install
@@ -229,13 +274,6 @@ main() {
     print_info "  fastwg scan            # Сканирование конфигураций"
     print_info "  fastwg create client   # Создание клиента"
     print_info "  fastwg list            # Список клиентов"
-    print_info ""
-    print_info "Или используйте алиас:"
-    print_info "  wg --help"
-    print_info "  wg create client"
-    print_info ""
-    print_warning "Не забудьте перезагрузить shell или выполнить:"
-    print_info "  source ~/.bashrc"
 }
 
 # Обработка аргументов
@@ -261,9 +299,8 @@ case "${1:-}" in
         
 
         
-        # Удаляем конфигурационные файлы
-        print_info "Удаление конфигурационных файлов..."
-        rm -rf /etc/wireguard
+        # Удаляем только файлы FastWG (не трогаем WireGuard)
+        print_info "Удаление файлов FastWG..."
         rm -rf ./wireguard
         
         # Удаляем базу данных
@@ -276,8 +313,7 @@ case "${1:-}" in
             rmdir /var/lib/fastwg
         fi
         
-        # Удаляем алиас
-        sed -i '/alias wg=fastwg/d' ~/.bashrc 2>/dev/null || true
+
         
         print_success "FastWG полностью удален"
         exit 0
