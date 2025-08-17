@@ -250,13 +250,13 @@ class WireGuardManager:
         result = []
         for client in clients:
             is_connected = client.public_key in active_connections
-
+            
             # Обновляем last_seen для подключенных клиентов
             if is_connected:
                 self.db.update_client_last_seen(client.name, datetime.now())
                 # Обновляем объект клиента для отображения
                 client.last_seen = datetime.now()
-
+            
             result.append(
                 {
                     "name": client.name,
@@ -296,12 +296,19 @@ class WireGuardManager:
             # Если нет сервера, используем дефолтную сеть
             network = ipaddress.IPv4Network("10.0.0.0/24")
         else:
-            network = ipaddress.IPv4Network(server_config.address)
+            # Создаем сеть из адреса сервера, убирая host bits
+            server_network = ipaddress.IPv4Network(server_config.address, strict=False)
+            network = ipaddress.IPv4Network(f"{server_network.network_address}/{server_network.prefixlen}")
 
         # Получаем все существующие IP
         existing_ips = set()
         for client in self.db.get_all_clients():
             existing_ips.add(client.ip_address)
+
+        # Добавляем IP сервера в исключения
+        if server_config:
+            server_ip = server_config.address.split('/')[0]  # Убираем маску
+            existing_ips.add(server_ip)
 
         # Ищем свободный IP
         for ip in network.hosts():
