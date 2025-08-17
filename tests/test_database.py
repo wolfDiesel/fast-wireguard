@@ -199,6 +199,7 @@ class TestDatabase(unittest.TestCase):
             dns="8.8.8.8",
             mtu=1420,
             config_path="/etc/wireguard/wg0.conf",
+            external_ip="192.168.1.1",
         )
 
         # Save configuration
@@ -255,6 +256,7 @@ class TestDatabase(unittest.TestCase):
             dns="8.8.8.8",
             mtu=1420,
             config_path="/etc/wireguard/wg0.conf",
+            external_ip="192.168.1.1",
         )
 
         server_dict = server.to_dict()

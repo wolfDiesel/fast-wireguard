@@ -42,12 +42,13 @@ class TestIPAllocation(unittest.TestCase):
             id=1,
             interface="wg0",
             private_key="test_private_key",
-            public_key="test_public_key",
+            public_key="test_public_key", 
             address="10.42.42.1/24",  # This has host bits set
             port=51820,
             dns="8.8.8.8",
             mtu=1420,
             config_path="/etc/wireguard/wg0.conf",
+            external_ip="192.168.1.1",
         )
 
         # Mock database methods
@@ -91,6 +92,7 @@ class TestIPAllocation(unittest.TestCase):
             dns="8.8.8.8",
             mtu=1420,
             config_path="/etc/wireguard/wg0.conf",
+            external_ip="192.168.1.1",
         )
 
         # Mock existing clients
