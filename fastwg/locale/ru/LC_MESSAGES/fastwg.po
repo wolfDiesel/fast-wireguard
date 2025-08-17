@@ -256,3 +256,11 @@ msgstr "Показывает список всех клиентов"
 #: fastwg/cli.py:175
 msgid "Show WireGuard server status"
 msgstr "Показывает статус WireGuard сервера"
+
+#: fastwg/cli.py:131
+msgid "Show all clients including inactive and blocked"
+msgstr "Показать всех клиентов включая неактивных и заблокированных"
+
+#: fastwg/cli.py:140
+msgid "No active clients found. Use --all to show all clients."
+msgstr "Активные клиенты не найдены. Используйте --all для показа всех клиентов."

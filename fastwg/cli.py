@@ -129,7 +129,8 @@ def cat(name):
 
 
 @cli.command()
-def list():
+@click.option('--all', '-a', is_flag=True, help=_('Show all clients including inactive and blocked'))
+def list(all):
     """Show list of all clients"""
     wg = WireGuardManager()
     clients = wg.list_clients()
@@ -138,9 +139,22 @@ def list():
         click.echo(f"{Fore.YELLOW}{_('No clients found')}{Style.RESET_ALL}")
         return
     
+    # Filter clients based on --all flag
+    if not all:
+        # Show only active and connected clients by default
+        filtered_clients = [
+            client for client in clients 
+            if client['is_active'] and not client['is_blocked']
+        ]
+        if not filtered_clients:
+            click.echo(f"{Fore.YELLOW}{_('No active clients found. Use --all to show all clients.')}{Style.RESET_ALL}")
+            return
+    else:
+        filtered_clients = clients
+    
     # Prepare table data
     table_data = []
-    for client in clients:
+    for client in filtered_clients:
         status = []
         if client['is_active']:
             status.append(f"{Fore.GREEN}{_('Active')}{Style.RESET_ALL}")

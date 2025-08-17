@@ -381,3 +381,11 @@ msgstr ""
 #: fastwg/cli.py:190
 msgid "✗ WireGuard is not installed"
 msgstr ""
+
+#: fastwg/cli.py:131
+msgid "Show all clients including inactive and blocked"
+msgstr ""
+
+#: fastwg/cli.py:140
+msgid "No active clients found. Use --all to show all clients."
+msgstr ""
