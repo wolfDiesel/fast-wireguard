@@ -662,7 +662,7 @@ PersistentKeepalive = 15
             result_down = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
             if result_down.returncode != 0 and "is not a WireGuard interface" not in result_down.stderr:
                 print(f"Предупреждение при остановке интерфейса: {result_down.stderr}")
-            
+
             # Запускаем интерфейс
             result_up = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
             if result_up.returncode == 0:
