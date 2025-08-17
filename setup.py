@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="fastwg",
-    version="1.2.0",
+    version="1.0.2",
     author="wolfDiesel",
     author_email="",
     description="Fast WireGuard server management via CLI",
