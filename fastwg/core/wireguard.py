@@ -407,7 +407,7 @@ AllowedIPs = {client.ip_address}/32
             print("Ошибка: внешний IP сервера не установлен")
             print("Используйте команду: fastwg sethost <ip:port>")
             return ""
-        
+
         # Получаем IP сервера из базы данных
         server_ip = server_config.external_ip
 
@@ -674,17 +674,18 @@ PersistentKeepalive = 15
             if ":" not in host:
                 print("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
                 return False
-            
+
             external_ip, port_str = host.split(":", 1)
-            
+
             # Проверяем IP
             import ipaddress
+
             try:
                 ipaddress.ip_address(external_ip)
             except ValueError:
                 print(f"Ошибка: неверный IP адрес: {external_ip}")
                 return False
-            
+
             # Проверяем порт
             try:
                 port = int(port_str)
@@ -693,7 +694,7 @@ PersistentKeepalive = 15
             except ValueError:
                 print(f"Ошибка: неверный порт: {port_str}")
                 return False
-            
+
             server_config = self.db.get_server_config()
             if not server_config:
                 print("Конфигурация сервера не найдена")

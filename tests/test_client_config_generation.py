@@ -116,7 +116,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify that it returns empty string (error)
             self.assertEqual(result, "")
-            
+
             # Verify error message was printed
             mock_print.assert_any_call("Ошибка: внешний IP сервера не установлен")
             mock_print.assert_any_call("Используйте команду: fastwg sethost <ip:port>")
@@ -162,7 +162,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify that it returns empty string (error)
             self.assertEqual(result, "")
-            
+
             # Verify error message was printed
             mock_print.assert_any_call("Ошибка: внешний IP сервера не установлен")
             mock_print.assert_any_call("Используйте команду: fastwg sethost <ip:port>")
@@ -364,10 +364,10 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify that it returns True (success)
             self.assertTrue(result)
-            
+
             # Verify success message was printed
             mock_print.assert_any_call("✓ Внешний хост сервера установлен: 192.168.1.100:51821")
-            
+
             # Verify that server config was updated
             self.assertEqual(server_config.external_ip, "192.168.1.100")
             self.assertEqual(server_config.port, 51821)
@@ -398,7 +398,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify that it returns False (error)
             self.assertFalse(result)
-            
+
             # Verify error message was printed
             mock_print.assert_any_call("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
 
@@ -428,7 +428,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify that it returns False (error)
             self.assertFalse(result)
-            
+
             # Verify error message was printed
             mock_print.assert_any_call("Ошибка: неверный IP адрес: invalid.ip")
 
@@ -458,7 +458,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify that it returns False (error)
             self.assertFalse(result)
-            
+
             # Verify error message was printed
             mock_print.assert_any_call("Ошибка: неверный порт: 99999")
 
