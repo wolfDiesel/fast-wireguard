@@ -7,10 +7,11 @@ exclude =
     build,
     dist,
     *.egg-info
-ignore = 
+ignore =
     E402,
     F401,
-    C901
+    C901,
+    E501
 per-file-ignores =
     fastwg/core/wireguard.py:F401,C901
     tests/*:E402
