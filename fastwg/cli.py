@@ -254,7 +254,7 @@ def sethost(host: str) -> None:
 @click.option("--port", default=51820, help="Listen port")
 @click.option("--network", default="10.42.42.0/24", help="Network address")
 @click.option("--dns", default="8.8.8.8", help="DNS server")
-def init(interface: str, port: int, network: str, dns: str) -> None:
+def init_server(interface: str, port: int, network: str, dns: str) -> None:
     """Initialize WireGuard server configuration"""
     click.echo(f"{Fore.YELLOW}{_('Initializing WireGuard server configuration...')}{Style.RESET_ALL}")
 
