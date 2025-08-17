@@ -51,13 +51,13 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations and directory creation
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
 
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
             # Call the method that generates client config
-            config_path = self.wg_manager._create_client_config(client)
+            self.wg_manager._create_client_config(client)
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
@@ -110,12 +110,12 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
             # Call the method that generates client config
-            config_path = self.wg_manager._create_client_config(client)
+            self.wg_manager._create_client_config(client)
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
@@ -167,12 +167,12 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
             # Call the method that generates client config
-            config_path = self.wg_manager._create_client_config(client)
+            self.wg_manager._create_client_config(client)
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
@@ -218,12 +218,12 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
             # Call the method that generates client config
-            config_path = self.wg_manager._create_client_config(client)
+            self.wg_manager._create_client_config(client)
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
@@ -269,12 +269,12 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
             # Call the method that generates client config
-            config_path = self.wg_manager._create_client_config(client)
+            self.wg_manager._create_client_config(client)
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
@@ -320,12 +320,12 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
             # Call the method that generates client config
-            config_path = self.wg_manager._create_client_config(client)
+            self.wg_manager._create_client_config(client)
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
