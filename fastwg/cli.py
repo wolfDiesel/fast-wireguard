@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-import click
-import sys
 import os
-from colorama import init, Fore, Style
+import sys
+
+import click
+from colorama import Fore, Style, init
 from tabulate import tabulate
 
 from .core.wireguard import WireGuardManager
