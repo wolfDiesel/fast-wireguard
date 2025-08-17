@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fastwg"
-version = "1.1.0"
+version = "1.2.0"
 description = "Fast WireGuard server management via CLI"
 readme = "README.md"
 requires-python = ">=3.9"
