@@ -42,7 +42,7 @@ class TestIPAllocation(unittest.TestCase):
             id=1,
             interface="wg0",
             private_key="test_private_key",
-            public_key="test_public_key", 
+            public_key="test_public_key",
             address="10.42.42.1/24",  # This has host bits set
             port=51820,
             dns="8.8.8.8",
