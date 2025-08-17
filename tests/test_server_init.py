@@ -63,7 +63,6 @@ class TestServerInit(unittest.TestCase):
         self.assertIn("ListenPort = 51820", written_content)
         self.assertIn("DNS = 8.8.8.8", written_content)
 
-
         # Check file permissions
         mock_chmod.assert_called_once()
 
