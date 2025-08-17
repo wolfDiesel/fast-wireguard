@@ -21,7 +21,9 @@ class TestConnectionStatus(unittest.TestCase):
         import tempfile
 
         temp_dir = tempfile.mkdtemp()
-        self.wg_manager = WireGuardManager(config_dir=temp_dir, keys_dir=os.path.join(temp_dir, "keys"))
+        self.wg_manager = WireGuardManager(
+            config_dir=temp_dir, keys_dir=os.path.join(temp_dir, "keys")
+        )
 
     def test_parse_handshake_time_seconds(self):
         """Test parsing time in seconds"""
@@ -65,25 +67,33 @@ class TestConnectionStatus(unittest.TestCase):
 
     def test_is_peer_connected_no_handshake(self):
         """Test: peer without handshake is not connected"""
-        result = self.wg_manager._is_peer_connected(has_handshake=False, handshake_time=None)
+        result = self.wg_manager._is_peer_connected(
+            has_handshake=False, handshake_time=None
+        )
         self.assertFalse(result)
 
     def test_is_peer_connected_recent_handshake(self):
         """Test: peer with recent handshake is connected"""
         recent_time = datetime.now() - timedelta(minutes=30)
-        result = self.wg_manager._is_peer_connected(has_handshake=True, handshake_time=recent_time)
+        result = self.wg_manager._is_peer_connected(
+            has_handshake=True, handshake_time=recent_time
+        )
         self.assertTrue(result)
 
     def test_is_peer_connected_old_handshake(self):
         """Test: peer with old handshake is not connected"""
         old_time = datetime.now() - timedelta(hours=2)
-        result = self.wg_manager._is_peer_connected(has_handshake=True, handshake_time=old_time)
+        result = self.wg_manager._is_peer_connected(
+            has_handshake=True, handshake_time=old_time
+        )
         self.assertFalse(result)
 
     def test_is_peer_connected_exact_hour(self):
         """Test: peer with handshake exactly 1 hour ago is not connected (edge case)"""
         exact_hour_time = datetime.now() - timedelta(hours=1)
-        result = self.wg_manager._is_peer_connected(has_handshake=True, handshake_time=exact_hour_time)
+        result = self.wg_manager._is_peer_connected(
+            has_handshake=True, handshake_time=exact_hour_time
+        )
         self.assertFalse(result)
 
     def test_parse_wg_show_output_simple(self):

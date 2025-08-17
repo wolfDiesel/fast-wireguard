@@ -15,7 +15,9 @@ from .database import Database
 class WireGuardManager:
     """Main class for WireGuard server management"""
 
-    def __init__(self, config_dir: str = "/etc/wireguard", keys_dir: str = "./wireguard/keys"):
+    def __init__(
+        self, config_dir: str = "/etc/wireguard", keys_dir: str = "./wireguard/keys"
+    ):
         self.config_dir = config_dir
         self.keys_dir = keys_dir
         self.db = Database()
@@ -37,7 +39,9 @@ class WireGuardManager:
         """Checks for root privileges"""
         return os.geteuid() == 0
 
-    def _find_client_by_ip_and_key(self, ip_address: str, public_key: str) -> Optional[Client]:
+    def _find_client_by_ip_and_key(
+        self, ip_address: str, public_key: str
+    ) -> Optional[Client]:
         """Finds client by IP address and public key"""
         all_clients = self.db.get_all_clients()
         for client in all_clients:
@@ -56,7 +60,13 @@ class WireGuardManager:
                     try:
                         with open(config_path, "r") as f:
                             content = f.read()
-                            existing_configs.append({"path": config_path, "content": content, "filename": filename})
+                            existing_configs.append(
+                                {
+                                    "path": config_path,
+                                    "content": content,
+                                    "filename": filename,
+                                }
+                            )
                     except Exception as e:
                         print(f"Error reading {config_path}: {e}")
 
@@ -90,7 +100,11 @@ class WireGuardManager:
                 elif line.startswith("#"):
                     if current_section == "peer" and current_client is not None:
                         comment = line[1:].strip()
-                        if comment and not comment.startswith(" ") and not comment.startswith("\t"):
+                        if (
+                            comment
+                            and not comment.startswith(" ")
+                            and not comment.startswith("\t")
+                        ):
                             current_client["Name"] = comment
                 elif current_section == "interface":
                     if "=" in line:
@@ -106,9 +120,7 @@ class WireGuardManager:
                 return False
 
             private_key = server_config.get("PrivateKey", "")
-            public_key = (
-                self._generate_public_key(private_key) if private_key else ""
-            )
+            public_key = self._generate_public_key(private_key) if private_key else ""
 
             server = Server(
                 id=None,
@@ -134,7 +146,9 @@ class WireGuardManager:
                     allowed_ips = client_data.get("AllowedIPs", "")
                     ip_address = allowed_ips.split("/")[0] if allowed_ips else ""
 
-                    existing_client = self._find_client_by_ip_and_key(ip_address, public_key)
+                    existing_client = self._find_client_by_ip_and_key(
+                        ip_address, public_key
+                    )
                     if existing_client:
                         print(f"Client with IP {ip_address} already exists, skipping")
                         continue
@@ -176,7 +190,9 @@ class WireGuardManager:
 
         server_config = self.db.get_server_config()
         if not server_config:
-            print("Server configuration not found. Run fastwg scan first to import existing configurations.")
+            print(
+                "Server configuration not found. Run fastwg scan first to import existing configurations."
+            )
             return None
 
         private_key = self._generate_private_key()
@@ -270,7 +286,11 @@ class WireGuardManager:
         if not client:
             return None
 
-        config_file = client.config_path if client.config_path else f"./wireguard/configs/{name}.conf"
+        config_file = (
+            client.config_path
+            if client.config_path
+            else f"./wireguard/configs/{name}.conf"
+        )
 
         if os.path.exists(config_file):
             with open(config_file, "r") as f:
@@ -319,7 +339,9 @@ class WireGuardManager:
         private_key_bytes = base64.b64decode(private_key_base64)
         private_key = x25519.X25519PrivateKey.from_private_bytes(private_key_bytes)
         public_key = private_key.public_key()
-        public_bytes = public_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
+        public_bytes = public_key.public_bytes(
+            encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+        )
         return base64.b64encode(public_bytes).decode("utf-8")
 
     def _get_next_ip(self) -> str:
@@ -329,7 +351,9 @@ class WireGuardManager:
             network = ipaddress.IPv4Network("10.0.0.0/24")
         else:
             server_network = ipaddress.IPv4Network(server_config.address, strict=False)
-            network = ipaddress.IPv4Network(f"{server_network.network_address}/{server_network.prefixlen}")
+            network = ipaddress.IPv4Network(
+                f"{server_network.network_address}/{server_network.prefixlen}"
+            )
 
         existing_ips = set()
         for client in self.db.get_all_clients():
@@ -353,7 +377,9 @@ class WireGuardManager:
             print("Server configuration not found")
             return False
 
-        clients = [c for c in self.db.get_all_clients() if c.is_active and not c.is_blocked]
+        clients = [
+            c for c in self.db.get_all_clients() if c.is_active and not c.is_blocked
+        ]
 
         config_content = f"""[Interface]
 PrivateKey = {server_config.private_key}
@@ -444,7 +470,16 @@ PersistentKeepalive = 15
                         current_interface = line.split(":")[1].strip()
                     elif line.startswith("peer:") and public_key in line:
                         if current_interface:
-                            subprocess.run(["wg", "set", current_interface, "peer", public_key, "remove"])
+                            subprocess.run(
+                                [
+                                    "wg",
+                                    "set",
+                                    current_interface,
+                                    "peer",
+                                    public_key,
+                                    "remove",
+                                ]
+                            )
                             break
         except Exception as e:
             print(f"Error removing peer: {e}")
@@ -477,7 +512,9 @@ PersistentKeepalive = 15
             line = line.strip()
 
             if line.startswith("peer:"):
-                if current_peer and self._is_peer_connected(has_handshake, handshake_time):
+                if current_peer and self._is_peer_connected(
+                    has_handshake, handshake_time
+                ):
                     active_peers.add(current_peer)
 
                 current_peer = line.split(":")[1].strip()
@@ -527,7 +564,9 @@ PersistentKeepalive = 15
 
         return now - timedelta(seconds=total_seconds)
 
-    def _is_peer_connected(self, has_handshake: bool, handshake_time: Optional[datetime]) -> bool:
+    def _is_peer_connected(
+        self, has_handshake: bool, handshake_time: Optional[datetime]
+    ) -> bool:
         """Determines if peer is connected according to new logic"""
         from datetime import datetime, timedelta
 
@@ -551,7 +590,9 @@ PersistentKeepalive = 15
                     return False
                 interface = server_config.interface
 
-            result = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
+            result = subprocess.run(
+                ["wg-quick", "up", interface], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 print(f"✓ WireGuard server {interface} started")
                 return True
@@ -572,7 +613,9 @@ PersistentKeepalive = 15
                     return False
                 interface = server_config.interface
 
-            result = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
+            result = subprocess.run(
+                ["wg-quick", "down", interface], capture_output=True, text=True
+            )
             if result.returncode == 0:
                 print(f"✓ WireGuard server {interface} stopped")
                 return True
@@ -630,7 +673,11 @@ PersistentKeepalive = 15
             return False
 
     def init_server_config(
-        self, interface: str = "wg0", port: int = 51820, network: str = "10.42.42.0/24", dns: str = "8.8.8.8"
+        self,
+        interface: str = "wg0",
+        port: int = 51820,
+        network: str = "10.42.42.0/24",
+        dns: str = "8.8.8.8",
     ) -> bool:
         """Initializes WireGuard server configuration"""
         try:
@@ -728,11 +775,18 @@ PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACC
     def _restart_wireguard(self, interface: str) -> bool:
         """Restarts WireGuard interface (internal method)"""
         try:
-            result_down = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
-            if result_down.returncode != 0 and "is not a WireGuard interface" not in result_down.stderr:
+            result_down = subprocess.run(
+                ["wg-quick", "down", interface], capture_output=True, text=True
+            )
+            if (
+                result_down.returncode != 0
+                and "is not a WireGuard interface" not in result_down.stderr
+            ):
                 print(f"Warning when stopping interface: {result_down.stderr}")
 
-            result_up = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
+            result_up = subprocess.run(
+                ["wg-quick", "up", interface], capture_output=True, text=True
+            )
             if result_up.returncode == 0:
                 return True
             else:
