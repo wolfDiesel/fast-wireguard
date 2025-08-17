@@ -151,6 +151,12 @@ class WireGuardManager:
             print(f"Клиент {name} уже существует")
             return None
 
+        # Проверяем что серверная конфигурация существует
+        server_config = self.db.get_server_config()
+        if not server_config:
+            print("Серверная конфигурация не найдена. Сначала выполните fastwg scan для импорта существующих конфигураций.")
+            return None
+
         # Генерируем ключи
         private_key = self._generate_private_key()
         public_key = self._generate_public_key(private_key)
@@ -401,6 +407,11 @@ AllowedIPs = {client.ip_address}/32
         with open(public_key_file, "w") as f:
             f.write(client.public_key)
         os.chmod(public_key_file, 0o644)
+
+        # Проверяем что публичный ключ сервера не пустой
+        if not server_config.public_key:
+            print("Ошибка: публичный ключ сервера не найден")
+            return ""
 
         # Создаем конфигурацию клиента
         config_content = f"""[Interface]
