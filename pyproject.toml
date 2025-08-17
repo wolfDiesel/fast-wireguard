@@ -7,7 +7,7 @@ name = "fastwg"
 version = "1.0.0"
 description = "Fast WireGuard server management via CLI"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "wolfDiesel", email = "wolfdiesel@example.com"}
@@ -19,7 +19,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -41,9 +40,9 @@ dependencies = [
 dev = [
     "types-tabulate>=0.9.0",
     "flake8>=7.0.0",
-    "black>=25.0.0",
-    "isort>=6.0.0",
-    "mypy>=1.17.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
     "coverage>=7.0.0",
 ]
 
