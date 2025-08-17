@@ -135,6 +135,14 @@ install_fastwg() {
     print_info "Установка FastWG..."
     
     pip3 install -e .
+    
+    # Создание папок для конфигов и ключей
+    print_info "Создание папок для конфигураций..."
+    mkdir -p /tmp/fastwg/wireguard/configs
+    mkdir -p /tmp/fastwg/wireguard/keys
+    chmod 700 /tmp/fastwg/wireguard/configs
+    chmod 700 /tmp/fastwg/wireguard/keys
+    
     print_success "FastWG установлен"
 }
 
@@ -202,6 +210,22 @@ EOF
     fi
 }
 
+# Автоматический скан после установки
+auto_scan_after_install() {
+    print_info "Автоматическое сканирование существующих конфигураций..."
+    
+    if command -v fastwg &> /dev/null; then
+        print_info "Выполняется скан WireGuard конфигураций..."
+        if fastwg scan; then
+            print_success "Скан завершен успешно"
+        else
+            print_warning "Скан завершен с предупреждениями (это нормально для новой установки)"
+        fi
+    else
+        print_warning "FastWG не найден в PATH, скан пропущен"
+    fi
+}
+
 # Основная функция
 main() {
     echo "=========================================="
@@ -220,6 +244,9 @@ main() {
     verify_installation
     create_alias
     create_systemd_service
+    
+    # Автоматический скан после установки
+    auto_scan_after_install
     
     echo "=========================================="
     print_success "Установка завершена!"
