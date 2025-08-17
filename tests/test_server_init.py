@@ -36,14 +36,18 @@ class TestServerInit(unittest.TestCase):
     @patch("os.chmod")
     @patch("fastwg.core.wireguard.WireGuardManager._generate_private_key")
     @patch("fastwg.core.wireguard.WireGuardManager._generate_public_key")
-    def test_init_server_config_success(self, mock_generate_public, mock_generate_private, mock_chmod, mock_open):
+    def test_init_server_config_success(
+        self, mock_generate_public, mock_generate_private, mock_chmod, mock_open
+    ):
         """Test successful server configuration initialization"""
         # Setup mocks
         mock_generate_private.return_value = "test_private_key"
         mock_generate_public.return_value = "test_public_key"
 
         # Call the method
-        result = self.wg_manager.init_server_config(interface="wg0", port=51820, network="10.42.42.0/24", dns="8.8.8.8")
+        result = self.wg_manager.init_server_config(
+            interface="wg0", port=51820, network="10.42.42.0/24", dns="8.8.8.8"
+        )
 
         # Assertions
         self.assertTrue(result)
@@ -76,7 +80,9 @@ class TestServerInit(unittest.TestCase):
         self.assertEqual(saved_server.address, "10.42.42.0/24")
         self.assertEqual(saved_server.dns, "8.8.8.8")
         self.assertEqual(saved_server.mtu, 1420)
-        self.assertEqual(saved_server.config_path, os.path.join(self.config_dir, "wg0.conf"))
+        self.assertEqual(
+            saved_server.config_path, os.path.join(self.config_dir, "wg0.conf")
+        )
         self.assertIsNone(saved_server.external_ip)
 
     def test_init_server_config_already_exists(self):
@@ -106,7 +112,9 @@ class TestServerInit(unittest.TestCase):
     @patch("os.chmod")
     @patch("fastwg.core.wireguard.WireGuardManager._generate_private_key")
     @patch("fastwg.core.wireguard.WireGuardManager._generate_public_key")
-    def test_init_server_config_database_error(self, mock_generate_public, mock_generate_private, mock_chmod, mock_open):
+    def test_init_server_config_database_error(
+        self, mock_generate_public, mock_generate_private, mock_chmod, mock_open
+    ):
         """Test that init fails on database save error"""
         # Setup mocks
         mock_generate_private.return_value = "test_private_key"
@@ -124,14 +132,18 @@ class TestServerInit(unittest.TestCase):
     @patch("os.chmod")
     @patch("fastwg.core.wireguard.WireGuardManager._generate_private_key")
     @patch("fastwg.core.wireguard.WireGuardManager._generate_public_key")
-    def test_init_server_config_custom_parameters(self, mock_generate_public, mock_generate_private, mock_chmod, mock_open):
+    def test_init_server_config_custom_parameters(
+        self, mock_generate_public, mock_generate_private, mock_chmod, mock_open
+    ):
         """Test init with custom parameters"""
         # Setup mocks
         mock_generate_private.return_value = "test_private_key"
         mock_generate_public.return_value = "test_public_key"
 
         # Call the method with custom parameters
-        result = self.wg_manager.init_server_config(interface="wg1", port=51821, network="192.168.1.0/24", dns="1.1.1.1")
+        result = self.wg_manager.init_server_config(
+            interface="wg1", port=51821, network="192.168.1.0/24", dns="1.1.1.1"
+        )
 
         # Assertions
         self.assertTrue(result)

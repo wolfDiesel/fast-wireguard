@@ -13,21 +13,18 @@ from .database import Database
 
 
 class WireGuardManager:
-    """Основной класс для управления WireGuard сервером"""
+    """Main class for WireGuard server management"""
 
     def __init__(self, config_dir: str = "/etc/wireguard", keys_dir: str = "./wireguard/keys"):
         self.config_dir = config_dir
         self.keys_dir = keys_dir
         self.db = Database()
 
-        # Создаем директории если не существуют
-        # Для тестов используем временные директории
         try:
             os.makedirs(self.config_dir, exist_ok=True)
             os.makedirs(self.keys_dir, exist_ok=True)
             os.makedirs("./wireguard/configs", exist_ok=True)
         except PermissionError:
-            # Если нет прав на /etc/wireguard, используем временную директорию
             import tempfile
 
             temp_dir = tempfile.mkdtemp()
@@ -37,14 +34,21 @@ class WireGuardManager:
             os.makedirs("./wireguard/configs", exist_ok=True)
 
     def check_root_privileges(self) -> bool:
-        """Проверяет наличие root привилегий"""
+        """Checks for root privileges"""
         return os.geteuid() == 0
 
+    def _find_client_by_ip_and_key(self, ip_address: str, public_key: str) -> Optional[Client]:
+        """Finds client by IP address and public key"""
+        all_clients = self.db.get_all_clients()
+        for client in all_clients:
+            if client.ip_address == ip_address or client.public_key == public_key:
+                return client
+        return None
+
     def scan_existing_configs(self) -> List[Dict]:
-        """Сканирует существующие конфигурации WireGuard"""
+        """Scans existing WireGuard configurations"""
         existing_configs = []
 
-        # Сканируем /etc/wireguard
         if os.path.exists(self.config_dir):
             for filename in os.listdir(self.config_dir):
                 if filename.endswith(".conf"):
@@ -54,17 +58,16 @@ class WireGuardManager:
                             content = f.read()
                             existing_configs.append({"path": config_path, "content": content, "filename": filename})
                     except Exception as e:
-                        print(f"Ошибка чтения {config_path}: {e}")
+                        print(f"Error reading {config_path}: {e}")
 
         return existing_configs
 
     def import_existing_config(self, config_path: str) -> bool:
-        """Импортирует существующую конфигурацию"""
+        """Imports existing configuration"""
         try:
             with open(config_path, "r") as f:
                 content = f.read()
 
-            # Парсим конфигурацию сервера
             lines = content.split("\n")
             server_config: dict[str, str] = {}
             clients: list[dict[str, str]] = []
@@ -85,7 +88,6 @@ class WireGuardManager:
                     current_client = {}
                     clients.append(current_client)
                 elif line.startswith("#"):
-                    # Сохраняем комментарии как потенциальные имена клиентов
                     if current_section == "peer" and current_client is not None:
                         comment = line[1:].strip()
                         if comment and not comment.startswith(" ") and not comment.startswith("\t"):
@@ -99,89 +101,89 @@ class WireGuardManager:
                         key, value = line.split("=", 1)
                         current_client[key.strip()] = value.strip()
 
-            # Сохраняем конфигурацию сервера
-            if server_config:
-                private_key = server_config.get("PrivateKey", "")
-                # Генерируем публичный ключ из приватного
-                public_key = self._generate_public_key(private_key) if private_key else ""
+            if not server_config:
+                print("Interface section not found in config")
+                return False
 
-                server = Server(
-                    id=None,
-                    interface=os.path.basename(config_path).replace(".conf", ""),
-                    private_key=private_key,
-                    public_key=public_key,
-                    address=server_config.get("Address", ""),
-                    port=int(server_config.get("ListenPort", 51820)),
-                    dns=server_config.get("DNS", "8.8.8.8"),
-                    mtu=int(server_config.get("MTU", 1420)),
-                    config_path=config_path,
-                    external_ip=None,  # Пока None, нужно будет установить вручную
-                )
-                self.db.save_server_config(server)
+            private_key = server_config.get("PrivateKey", "")
+            public_key = (
+                self._generate_public_key(private_key) if private_key else ""
+            )
 
-            # Импортируем клиентов
-            for i, client_data in enumerate(clients, 1):
+            server = Server(
+                id=None,
+                interface=os.path.basename(config_path).replace(".conf", ""),
+                private_key=private_key,
+                public_key=public_key,
+                address=server_config.get("Address", ""),
+                port=int(server_config.get("ListenPort", 51820)),
+                dns=server_config.get("DNS", "8.8.8.8"),
+                mtu=int(server_config.get("MTU", 1420)),
+                config_path=config_path,
+                external_ip=None,
+            )
+
+            if not self.db.save_server_config(server):
+                print("Error saving server configuration")
+                return False
+
+            host_counter = 1
+            for client_data in clients:
                 if "PublicKey" in client_data:
-                    # Генерируем уникальное имя клиента
-                    client_name = client_data.get("Name", f"imported_{i}")
+                    public_key = client_data["PublicKey"]
+                    allowed_ips = client_data.get("AllowedIPs", "")
+                    ip_address = allowed_ips.split("/")[0] if allowed_ips else ""
 
-                    # Проверяем, не существует ли уже клиент с таким именем
-                    existing_client = self.db.get_client(client_name)
+                    existing_client = self._find_client_by_ip_and_key(ip_address, public_key)
                     if existing_client:
-                        # Если клиент существует, пропускаем его
+                        print(f"Client with IP {ip_address} already exists, skipping")
                         continue
 
-                    # Генерируем приватный ключ если нет
+                    client_name = f"host_{host_counter}"
+                    host_counter += 1
+
                     if "PrivateKey" not in client_data:
                         private_key = self._generate_private_key()
                     else:
                         private_key = client_data["PrivateKey"]
 
-                    # Определяем IP адрес
-                    allowed_ips = client_data.get("AllowedIPs", "")
-                    ip_address = allowed_ips.split("/")[0] if allowed_ips else self._get_next_ip()
-
                     client = Client(
                         id=None,
                         name=client_name,
-                        public_key=client_data["PublicKey"],
+                        public_key=public_key,
                         private_key=private_key,
                         ip_address=ip_address,
                         created_at=datetime.now(),
                         is_active=True,
                         is_blocked=False,
                         last_seen=None,
-                        config_path=None,  # Для импортированных клиентов пока None
+                        config_path=None,
                     )
 
                     self.db.add_client(client)
+                    print(f"Imported client: {client_name} (IP: {ip_address})")
 
             return True
         except Exception as e:
-            print(f"Ошибка импорта конфигурации: {e}")
+            print(f"Error importing configuration: {e}")
             return False
 
     def create_client(self, name: str) -> Optional[Client]:
-        """Создает нового клиента"""
-        # Проверяем что клиент не существует
+        """Creates a new client"""
         if self.db.get_client(name):
-            print(f"Клиент {name} уже существует")
+            print(f"Client {name} already exists")
             return None
 
-        # Проверяем что серверная конфигурация существует
         server_config = self.db.get_server_config()
         if not server_config:
-            print("Серверная конфигурация не найдена. Сначала выполните fastwg scan для импорта существующих конфигураций.")
+            print("Server configuration not found. Run fastwg scan first to import existing configurations.")
             return None
 
-        # Генерируем ключи
         private_key = self._generate_private_key()
         public_key = self._generate_public_key(private_key)
 
-        # Получаем следующий свободный IP
         ip_address = self._get_next_ip()
 
-        # Создаем конфигурационный файл клиента
         config_path = self._create_client_config(
             Client(
                 id=None,
@@ -193,15 +195,14 @@ class WireGuardManager:
                 is_active=True,
                 is_blocked=False,
                 last_seen=None,
-                config_path=None,  # Временно None
+                config_path=None,
             )
         )
 
         if not config_path:
-            print(f"Ошибка создания конфигурации для клиента {name}")
+            print(f"Error creating configuration for client {name}")
             return None
 
-        # Создаем клиента с путем к конфигу
         client = Client(
             id=None,
             name=name,
@@ -215,71 +216,60 @@ class WireGuardManager:
             config_path=config_path,
         )
 
-        # Сохраняем в базу
         if self.db.add_client(client):
-            # Обновляем конфигурацию сервера (без перезапуска)
             self._update_server_config(restart=False)
             return client
         else:
-            print(f"Ошибка создания клиента {name}")
+            print(f"Error creating client {name}")
             return None
 
     def delete_client(self, name: str) -> bool:
-        """Удаляет клиента"""
+        """Deletes a client"""
         client = self.db.get_client(name)
         if not client:
-            print(f"Клиент {name} не найден")
+            print(f"Client {name} not found")
             return False
 
-        # Удаляем из WireGuard
         self._remove_peer_from_wg(client.public_key)
 
-        # Удаляем из базы данных
         if self.db.delete_client(name):
-            # Удаляем конфигурационный файл
             config_file = f"./wireguard/configs/{name}.conf"
             if os.path.exists(config_file):
                 os.remove(config_file)
 
-            # Обновляем конфигурацию сервера
             self._update_server_config()
             return True
         return False
 
     def disable_client(self, name: str) -> bool:
-        """Блокирует клиента"""
+        """Blocks a client"""
         client = self.db.get_client(name)
         if not client:
-            print(f"Клиент {name} не найден")
+            print(f"Client {name} not found")
             return False
 
-        # Удаляем из WireGuard
         self._remove_peer_from_wg(client.public_key)
 
-        # Обновляем статус в базе
         return self.db.update_client_status(name, is_active=False, is_blocked=True)
 
     def enable_client(self, name: str) -> bool:
-        """Разблокирует клиента"""
+        """Unblocks a client"""
         client = self.db.get_client(name)
         if not client:
-            print(f"Клиент {name} не найден")
+            print(f"Client {name} not found")
             return False
 
-        # Обновляем статус в базе
         if self.db.update_client_status(name, is_active=True, is_blocked=False):
-            # Обновляем конфигурацию сервера (без перезапуска)
             self._update_server_config(restart=False)
             return True
         return False
 
     def get_client_config(self, name: str) -> Optional[str]:
-        """Получает конфигурацию клиента"""
+        """Gets client configuration"""
         client = self.db.get_client(name)
         if not client:
             return None
 
-        # Используем путь из БД, если есть
         config_file = client.config_path if client.config_path else f"./wireguard/configs/{name}.conf"
 
         if os.path.exists(config_file):
@@ -288,7 +278,7 @@ class WireGuardManager:
         return None
 
     def list_clients(self) -> List[Dict]:
-        """Получает список всех клиентов с информацией о подключениях"""
+        """Gets list of all clients with connection information"""
         clients = self.db.get_all_clients()
         active_connections = self._get_active_connections()
 
@@ -296,10 +286,8 @@ class WireGuardManager:
         for client in clients:
             is_connected = client.public_key in active_connections
 
-            # Обновляем last_seen для подключенных клиентов
             if is_connected:
                 self.db.update_client_last_seen(client.name, datetime.now())
-                # Обновляем объект клиента для отображения
                 client.last_seen = datetime.now()
 
             result.append(
@@ -317,7 +305,7 @@ class WireGuardManager:
         return result
 
     def _generate_private_key(self) -> str:
-        """Генерирует приватный ключ WireGuard в base64"""
+        """Generates WireGuard private key in base64"""
         private_key = x25519.X25519PrivateKey.generate()
         private_bytes = private_key.private_bytes(
             encoding=serialization.Encoding.Raw,
@@ -327,7 +315,7 @@ class WireGuardManager:
         return base64.b64encode(private_bytes).decode("utf-8")
 
     def _generate_public_key(self, private_key_base64: str) -> str:
-        """Генерирует публичный ключ из приватного в base64"""
+        """Generates public key from private key in base64"""
         private_key_bytes = base64.b64decode(private_key_base64)
         private_key = x25519.X25519PrivateKey.from_private_bytes(private_key_bytes)
         public_key = private_key.public_key()
@@ -335,45 +323,38 @@ class WireGuardManager:
         return base64.b64encode(public_bytes).decode("utf-8")
 
     def _get_next_ip(self) -> str:
-        """Получает следующий свободный IP адрес"""
+        """Gets next available IP address"""
         server_config = self.db.get_server_config()
         if not server_config:
-            # Если нет сервера, используем дефолтную сеть
             network = ipaddress.IPv4Network("10.0.0.0/24")
         else:
-            # Создаем сеть из адреса сервера, убирая host bits
             server_network = ipaddress.IPv4Network(server_config.address, strict=False)
             network = ipaddress.IPv4Network(f"{server_network.network_address}/{server_network.prefixlen}")
 
-        # Получаем все существующие IP
         existing_ips = set()
         for client in self.db.get_all_clients():
             existing_ips.add(client.ip_address)
 
-        # Добавляем IP сервера в исключения
         if server_config:
-            server_ip = server_config.address.split("/")[0]  # Убираем маску
+            server_ip = server_config.address.split("/")[0]
             existing_ips.add(server_ip)
 
-        # Ищем свободный IP
         for ip in network.hosts():
             ip_str = str(ip)
             if ip_str not in existing_ips:
                 return ip_str
 
-        raise Exception("Нет свободных IP адресов в сети")
+        raise Exception("No free IP addresses in network")
 
     def _update_server_config(self, restart: bool = False) -> bool:
-        """Обновляет конфигурацию сервера"""
+        """Updates server configuration"""
         server_config = self.db.get_server_config()
         if not server_config:
-            print("Конфигурация сервера не найдена")
+            print("Server configuration not found")
             return False
 
-        # Получаем активных клиентов
         clients = [c for c in self.db.get_all_clients() if c.is_active and not c.is_blocked]
 
-        # Формируем конфигурацию
         config_content = f"""[Interface]
 PrivateKey = {server_config.private_key}
 Address = {server_config.address}
@@ -382,7 +363,6 @@ MTU = {server_config.mtu}
 
 """
 
-        # Добавляем клиентов
         for client in clients:
             config_content += f"""[Peer]
 # {client.name}
@@ -391,55 +371,46 @@ AllowedIPs = {client.ip_address}/32
 
 """
 
-        # Записываем конфигурацию
         config_path = os.path.join(self.config_dir, f"{server_config.interface}.conf")
         with open(config_path, "w") as f:
             f.write(config_content)
 
-        # Устанавливаем правильные права
         os.chmod(config_path, 0o600)
 
-        # Перезапускаем WireGuard только если явно запрошено
         if restart:
             if not self._restart_wireguard(server_config.interface):
-                print("✗ Ошибка перезапуска WireGuard сервера")
+                print("✗ Error restarting WireGuard server")
                 return False
         return True
 
     def _create_client_config(self, client: Client) -> str:
-        """Создает конфигурационный файл для клиента и возвращает путь к файлу"""
+        """Creates client configuration file and returns file path"""
         server_config = self.db.get_server_config()
         if not server_config:
-            print("Конфигурация сервера не найдена")
+            print("Server configuration not found")
             return ""
 
-        # Проверяем что внешний IP сервера установлен
         if not server_config.external_ip:
-            print("Ошибка: внешний IP сервера не установлен")
-            print("Используйте команду: fastwg sethost <ip:port>")
+            print("Error: server external IP not set")
+            print("Use command: fastwg sethost <ip:port>")
             return ""
 
-        # Получаем IP сервера из базы данных
         server_ip = server_config.external_ip
 
-        # Сохраняем приватный ключ клиента
         private_key_file = f"./wireguard/keys/{client.name}_private.key"
         with open(private_key_file, "w") as f:
             f.write(client.private_key)
         os.chmod(private_key_file, 0o600)
 
-        # Сохраняем публичный ключ клиента
         public_key_file = f"./wireguard/keys/{client.name}_public.key"
         with open(public_key_file, "w") as f:
             f.write(client.public_key)
         os.chmod(public_key_file, 0o644)
 
-        # Проверяем что публичный ключ сервера не пустой
         if not server_config.public_key:
-            print("Ошибка: публичный ключ сервера не найден")
+            print("Error: server public key not found")
             return ""
 
-        # Создаем конфигурацию клиента
         config_content = f"""[Interface]
 PrivateKey = {client.private_key}
 Address = {client.ip_address}/24
@@ -456,15 +427,13 @@ PersistentKeepalive = 15
         with open(config_file, "w") as f:
             f.write(config_content)
 
-        # Устанавливаем правильные права
         os.chmod(config_file, 0o600)
 
         return config_file
 
     def _remove_peer_from_wg(self, public_key: str):
-        """Удаляет peer из WireGuard интерфейса"""
+        """Removes peer from WireGuard interface"""
         try:
-            # Получаем список peers
             result = subprocess.run(["wg", "show"], capture_output=True, text=True)
             if result.returncode == 0:
                 lines = result.stdout.split("\n")
@@ -475,26 +444,25 @@ PersistentKeepalive = 15
                         current_interface = line.split(":")[1].strip()
                     elif line.startswith("peer:") and public_key in line:
                         if current_interface:
-                            # Удаляем peer
                             subprocess.run(["wg", "set", current_interface, "peer", public_key, "remove"])
                             break
         except Exception as e:
-            print(f"Ошибка удаления peer: {e}")
+            print(f"Error removing peer: {e}")
 
     def _get_active_connections(self) -> set:
-        """Получает список активных подключений"""
+        """Gets list of active connections"""
         active_peers = set()
         try:
             result = subprocess.run(["wg", "show"], capture_output=True, text=True)
             if result.returncode == 0:
                 active_peers = self._parse_wg_show_output(result.stdout)
         except Exception as e:
-            print(f"Ошибка получения активных подключений: {e}")
+            print(f"Error getting active connections: {e}")
 
         return active_peers
 
     def _parse_wg_show_output(self, output: str) -> set:
-        """Парсит вывод wg show и возвращает активные подключения"""
+        """Parses wg show output and returns active connections"""
         import re
         from datetime import datetime, timedelta
 
@@ -509,11 +477,9 @@ PersistentKeepalive = 15
             line = line.strip()
 
             if line.startswith("peer:"):
-                # Проверяем предыдущий peer
                 if current_peer and self._is_peer_connected(has_handshake, handshake_time):
                     active_peers.add(current_peer)
 
-                # Начинаем новый peer
                 current_peer = line.split(":")[1].strip()
                 has_handshake = False
                 handshake_time = None
@@ -523,45 +489,37 @@ PersistentKeepalive = 15
                 time_str = line.split(":", 1)[1].strip()
                 handshake_time = self._parse_handshake_time(time_str)
 
-        # Проверяем последний peer
         if current_peer and self._is_peer_connected(has_handshake, handshake_time):
             active_peers.add(current_peer)
 
         return active_peers
 
     def _parse_handshake_time(self, time_str: str) -> datetime:
-        """Парсит строку времени handshake в datetime"""
+        """Parses handshake time string to datetime"""
         import re
         from datetime import datetime, timedelta
 
-        # Убираем " ago" в конце
         time_str = time_str.replace(" ago", "")
 
-        # Получаем текущее время
         now = datetime.now()
 
-        # Парсим компоненты времени
         total_seconds = 0
 
-        # Дни
         if "day" in time_str:
             days_match = re.search(r"(\d+)\s+days?", time_str)
             if days_match:
                 total_seconds += int(days_match.group(1)) * 24 * 3600
 
-        # Часы
         if "hour" in time_str:
             hours_match = re.search(r"(\d+)\s+hours?", time_str)
             if hours_match:
                 total_seconds += int(hours_match.group(1)) * 3600
 
-        # Минуты
         if "minute" in time_str:
             minutes_match = re.search(r"(\d+)\s+minutes?", time_str)
             if minutes_match:
                 total_seconds += int(minutes_match.group(1)) * 60
 
-        # Секунды
         if "second" in time_str:
             seconds_match = re.search(r"(\d+)\s+seconds?", time_str)
             if seconds_match:
@@ -570,104 +528,97 @@ PersistentKeepalive = 15
         return now - timedelta(seconds=total_seconds)
 
     def _is_peer_connected(self, has_handshake: bool, handshake_time: Optional[datetime]) -> bool:
-        """Определяет, подключен ли peer согласно новой логике"""
+        """Determines if peer is connected according to new logic"""
         from datetime import datetime, timedelta
 
-        # 1. Если не было handshake - не подключен
         if not has_handshake:
             return False
 
-        # 2. Если handshake больше часа назад - не активен
         if handshake_time:
             time_diff = datetime.now() - handshake_time
             if time_diff > timedelta(hours=1):
                 return False
 
-        # 3. В остальных случаях - активен
         return True
 
     def start_server(self, interface: str = None) -> bool:
-        """Запускает WireGuard сервер"""
+        """Starts WireGuard server"""
         try:
             if not interface:
                 server_config = self.db.get_server_config()
                 if not server_config:
-                    print("Конфигурация сервера не найдена")
+                    print("Server configuration not found")
                     return False
                 interface = server_config.interface
 
             result = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
             if result.returncode == 0:
-                print(f"✓ WireGuard сервер {interface} запущен")
+                print(f"✓ WireGuard server {interface} started")
                 return True
             else:
-                print(f"✗ Ошибка запуска WireGuard сервера: {result.stderr}")
+                print(f"✗ Error starting WireGuard server: {result.stderr}")
                 return False
         except Exception as e:
-            print(f"Ошибка запуска WireGuard: {e}")
+            print(f"Error starting WireGuard: {e}")
             return False
 
     def stop_server(self, interface: str = None) -> bool:
-        """Останавливает WireGuard сервер"""
+        """Stops WireGuard server"""
         try:
             if not interface:
                 server_config = self.db.get_server_config()
                 if not server_config:
-                    print("Конфигурация сервера не найдена")
+                    print("Server configuration not found")
                     return False
                 interface = server_config.interface
 
             result = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
             if result.returncode == 0:
-                print(f"✓ WireGuard сервер {interface} остановлен")
+                print(f"✓ WireGuard server {interface} stopped")
                 return True
             else:
-                print(f"✗ Ошибка остановки WireGuard сервера: {result.stderr}")
+                print(f"✗ Error stopping WireGuard server: {result.stderr}")
                 return False
         except Exception as e:
-            print(f"Ошибка остановки WireGuard: {e}")
+            print(f"Error stopping WireGuard: {e}")
             return False
 
     def restart_server(self, interface: str = None) -> bool:
-        """Перезапускает WireGuard сервер"""
+        """Restarts WireGuard server"""
         try:
             if not interface:
                 server_config = self.db.get_server_config()
                 if not server_config:
-                    print("Конфигурация сервера не найдена")
+                    print("Server configuration not found")
                     return False
                 interface = server_config.interface
 
-            print(f"Перезапуск WireGuard сервера {interface}...")
+            print(f"Restarting WireGuard server {interface}...")
 
-            # Останавливаем сервер
             if not self.stop_server(interface):
                 return False
 
-            # Небольшая пауза
             import time
 
             time.sleep(1)
 
-            # Запускаем сервер
             if not self.start_server(interface):
                 return False
 
-            print(f"✓ WireGuard сервер {interface} перезапущен")
+            print(f"✓ WireGuard server {interface} restarted")
             return True
         except Exception as e:
-            print(f"Ошибка перезапуска WireGuard: {e}")
+            print(f"Error restarting WireGuard: {e}")
             return False
 
     def reload_config(self) -> bool:
-        """Перезагружает конфигурацию сервера с перезапуском"""
+        """Reloads server configuration with restart"""
         try:
             server_config = self.db.get_server_config()
             if not server_config:
-                print("Конфигурация сервера не найдена")
+                print("Server configuration not found")
                 return False
 
-            # Обновляем конфигурацию с перезапуском
             if self._update_server_config(restart=True):
                 print("✓ Configuration reloaded successfully")
                 return True
@@ -675,45 +626,39 @@ PersistentKeepalive = 15
                 print("✗ Configuration reload failed")
                 return False
         except Exception as e:
-            print(f"Ошибка перезагрузки конфигурации: {e}")
+            print(f"Error reloading configuration: {e}")
             return False
 
     def init_server_config(
         self, interface: str = "wg0", port: int = 51820, network: str = "10.42.42.0/24", dns: str = "8.8.8.8"
     ) -> bool:
-        """Инициализирует конфигурацию сервера WireGuard"""
+        """Initializes WireGuard server configuration"""
         try:
-            # Проверяем, что конфигурация еще не существует
             existing_config = self.db.get_server_config()
             if existing_config:
-                print("Конфигурация сервера уже существует")
+                print("Server configuration already exists")
                 return False
 
-            # Генерируем ключи
             private_key = self._generate_private_key()
             public_key = self._generate_public_key(private_key)
 
-            # Создаем конфигурацию сервера
             server_config_content = f"""[Interface]
 PrivateKey = {private_key}
 Address = {network.replace('/24', '/24')}
 ListenPort = {port}
 DNS = {dns}
 
-# Включаем IP forwarding
+# Enable IP forwarding
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 """
 
-            # Сохраняем конфигурацию в файл
             config_path = os.path.join(self.config_dir, f"{interface}.conf")
             with open(config_path, "w") as f:
                 f.write(server_config_content)
 
-            # Устанавливаем правильные права доступа
             os.chmod(config_path, 0o600)
 
-            # Сохраняем в базу данных
             server = Server(
                 id=None,
                 interface=interface,
@@ -728,77 +673,71 @@ PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACC
             )
 
             if self.db.save_server_config(server):
-                print(f"✓ Конфигурация сервера создана: {config_path}")
+                print(f"✓ Server configuration created: {config_path}")
                 return True
             else:
-                print("✗ Ошибка сохранения в базу данных")
+                print("✗ Error saving to database")
                 return False
 
         except Exception as e:
-            print(f"Ошибка создания конфигурации сервера: {e}")
+            print(f"Error creating server configuration: {e}")
             return False
 
     def set_host(self, host: str) -> bool:
-        """Устанавливает внешний хост (IP:port) сервера"""
+        """Sets external host (IP:port) of server"""
         try:
-            # Парсим IP и порт
             if ":" not in host:
-                print("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
+                print("Error: format must be IP:port (e.g., 192.168.1.1:51820)")
                 return False
 
             external_ip, port_str = host.split(":", 1)
 
-            # Проверяем IP
             import ipaddress
 
             try:
                 ipaddress.ip_address(external_ip)
             except ValueError:
-                print(f"Ошибка: неверный IP адрес: {external_ip}")
+                print(f"Error: invalid IP address: {external_ip}")
                 return False
 
-            # Проверяем порт
             try:
                 port = int(port_str)
                 if port < 1 or port > 65535:
                     raise ValueError("Port out of range")
             except ValueError:
-                print(f"Ошибка: неверный порт: {port_str}")
+                print(f"Error: invalid port: {port_str}")
                 return False
 
             server_config = self.db.get_server_config()
             if not server_config:
-                print("Конфигурация сервера не найдена")
+                print("Server configuration not found")
                 return False
 
-            # Обновляем внешний IP и порт
             server_config.external_ip = external_ip
             server_config.port = port
             if self.db.save_server_config(server_config):
-                print(f"✓ Внешний хост сервера установлен: {external_ip}:{port}")
+                print(f"✓ Server external host set: {external_ip}:{port}")
                 return True
             else:
-                print("✗ Ошибка сохранения внешнего хоста")
+                print("✗ Error saving external host")
                 return False
         except Exception as e:
-            print(f"Ошибка установки внешнего хоста: {e}")
+            print(f"Error setting external host: {e}")
             return False
 
     def _restart_wireguard(self, interface: str) -> bool:
-        """Перезапускает WireGuard интерфейс (внутренний метод)"""
+        """Restarts WireGuard interface (internal method)"""
         try:
-            # Останавливаем интерфейс
             result_down = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
             if result_down.returncode != 0 and "is not a WireGuard interface" not in result_down.stderr:
-                print(f"Предупреждение при остановке интерфейса: {result_down.stderr}")
+                print(f"Warning when stopping interface: {result_down.stderr}")
 
-            # Запускаем интерфейс
             result_up = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
             if result_up.returncode == 0:
                 return True
             else:
-                print(f"✗ Ошибка запуска WireGuard интерфейса: {result_up.stderr}")
+                print(f"✗ Error starting WireGuard interface: {result_up.stderr}")
                 return False
         except Exception as e:
-            print(f"Ошибка перезапуска WireGuard: {e}")
+            print(f"Error restarting WireGuard: {e}")
             return False

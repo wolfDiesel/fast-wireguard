@@ -26,7 +26,9 @@ class TestIPAllocation(unittest.TestCase):
         with patch("fastwg.core.database.Database") as mock_db_class:
             mock_db_instance = mock_db_class.return_value
             temp_dir = tempfile.mkdtemp()
-            self.wg_manager = WireGuardManager(config_dir=temp_dir, keys_dir=os.path.join(temp_dir, "keys"))
+            self.wg_manager = WireGuardManager(
+                config_dir=temp_dir, keys_dir=os.path.join(temp_dir, "keys")
+            )
             # Set the database instance
             self.wg_manager.db = mock_db_instance
 
@@ -54,7 +56,9 @@ class TestIPAllocation(unittest.TestCase):
         )
 
         # Mock database methods
-        with patch.object(self.wg_manager.db, "get_server_config", return_value=server_config):
+        with patch.object(
+            self.wg_manager.db, "get_server_config", return_value=server_config
+        ):
             with patch.object(self.wg_manager.db, "get_all_clients", return_value=[]):
                 # Should not raise ValueError
                 next_ip = self.wg_manager._get_next_ip()
@@ -62,7 +66,9 @@ class TestIPAllocation(unittest.TestCase):
                 # Should return a valid IP from the network
                 self.assertTrue(next_ip.startswith("10.42.42."))
                 self.assertNotEqual(next_ip, "10.42.42.1")  # Should not be server IP
-                self.assertNotEqual(next_ip, "10.42.42.0")  # Should not be network address
+                self.assertNotEqual(
+                    next_ip, "10.42.42.0"
+                )  # Should not be network address
                 self.assertNotEqual(next_ip, "10.42.42.255")  # Should not be broadcast
 
     def test_get_next_ip_without_server_config(self):
@@ -75,7 +81,9 @@ class TestIPAllocation(unittest.TestCase):
 
                 # Should return a valid IP from default network
                 self.assertTrue(next_ip.startswith("10.0.0."))
-                self.assertNotEqual(next_ip, "10.0.0.0")  # Should not be network address
+                self.assertNotEqual(
+                    next_ip, "10.0.0.0"
+                )  # Should not be network address
                 self.assertNotEqual(next_ip, "10.0.0.255")  # Should not be broadcast
 
     def test_get_next_ip_avoids_existing_ips(self):
@@ -126,8 +134,12 @@ class TestIPAllocation(unittest.TestCase):
         ]
 
         # Mock database methods
-        with patch.object(self.wg_manager.db, "get_server_config", return_value=server_config):
-            with patch.object(self.wg_manager.db, "get_all_clients", return_value=existing_clients):
+        with patch.object(
+            self.wg_manager.db, "get_server_config", return_value=server_config
+        ):
+            with patch.object(
+                self.wg_manager.db, "get_all_clients", return_value=existing_clients
+            ):
                 next_ip = self.wg_manager._get_next_ip()
 
                 # Should not return existing IPs

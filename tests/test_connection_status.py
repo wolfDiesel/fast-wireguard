@@ -3,7 +3,7 @@
 import os
 import sys
 
-# Добавляем путь к модулям проекта
+# Add project modules path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import unittest  # noqa: E402
@@ -30,7 +30,7 @@ class TestConnectionStatus(unittest.TestCase):
         expected_diff = timedelta(seconds=30)
         actual_diff = datetime.now() - parsed_time
 
-        # Проверяем с погрешностью в 5 секунд
+        # Check with 5 second tolerance
         self.assertLess(abs(actual_diff - expected_diff).total_seconds(), 5)
 
     def test_parse_handshake_time_minutes(self):
@@ -104,7 +104,7 @@ peer: peer2_key=
 
         active_peers = self.wg_manager._parse_wg_show_output(wg_output)
 
-        # Ожидаем только peer1_key= как активный (30 секунд назад)
+        # Expect only peer1_key as active (30 seconds ago)
         expected = {"peer1_key="}
         self.assertEqual(active_peers, expected)
 

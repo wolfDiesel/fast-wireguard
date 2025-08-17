@@ -4,7 +4,7 @@ import os
 import sys
 import tempfile
 
-# Добавляем путь к модулям проекта
+# Add project modules path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import unittest  # noqa: E402
@@ -101,7 +101,7 @@ class TestDatabase(unittest.TestCase):
         # Check count
         self.assertEqual(len(all_clients), 2)
 
-        # Проверяем что оба клиента есть
+        # Check that both clients exist
         client_names = [c.name for c in all_clients]
         self.assertIn("client1", client_names)
         self.assertIn("client2", client_names)

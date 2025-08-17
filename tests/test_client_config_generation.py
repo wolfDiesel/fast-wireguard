@@ -118,8 +118,8 @@ class TestClientConfigGeneration(unittest.TestCase):
             self.assertEqual(result, "")
 
             # Verify error message was printed
-            mock_print.assert_any_call("Ошибка: внешний IP сервера не установлен")
-            mock_print.assert_any_call("Используйте команду: fastwg sethost <ip:port>")
+            mock_print.assert_any_call("Error: server external IP not set")
+            mock_print.assert_any_call("Use command: fastwg sethost <ip:port>")
 
     def test_create_client_config_with_empty_external_ip(self):
         """Test that client config fails when external IP is empty string"""
@@ -164,8 +164,8 @@ class TestClientConfigGeneration(unittest.TestCase):
             self.assertEqual(result, "")
 
             # Verify error message was printed
-            mock_print.assert_any_call("Ошибка: внешний IP сервера не установлен")
-            mock_print.assert_any_call("Используйте команду: fastwg sethost <ip:port>")
+            mock_print.assert_any_call("Error: server external IP not set")
+            mock_print.assert_any_call("Use command: fastwg sethost <ip:port>")
 
     def test_create_client_config_with_different_port(self):
         """Test that client config uses correct port from server config"""
@@ -366,7 +366,9 @@ class TestClientConfigGeneration(unittest.TestCase):
             self.assertTrue(result)
 
             # Verify success message was printed
-            mock_print.assert_any_call("✓ Внешний хост сервера установлен: 192.168.1.100:51821")
+            mock_print.assert_any_call(
+                "✓ Server external host set: 192.168.1.100:51821"
+            )
 
             # Verify that server config was updated
             self.assertEqual(server_config.external_ip, "192.168.1.100")
@@ -400,7 +402,9 @@ class TestClientConfigGeneration(unittest.TestCase):
             self.assertFalse(result)
 
             # Verify error message was printed
-            mock_print.assert_any_call("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
+            mock_print.assert_any_call(
+                "Error: format must be IP:port (e.g., 192.168.1.1:51820)"
+            )
 
     def test_set_host_invalid_ip(self):
         """Test setting host with invalid IP"""
@@ -430,7 +434,7 @@ class TestClientConfigGeneration(unittest.TestCase):
             self.assertFalse(result)
 
             # Verify error message was printed
-            mock_print.assert_any_call("Ошибка: неверный IP адрес: invalid.ip")
+            mock_print.assert_any_call("Error: invalid IP address: invalid.ip")
 
     def test_set_host_invalid_port(self):
         """Test setting host with invalid port"""
@@ -460,7 +464,7 @@ class TestClientConfigGeneration(unittest.TestCase):
             self.assertFalse(result)
 
             # Verify error message was printed
-            mock_print.assert_any_call("Ошибка: неверный порт: 99999")
+            mock_print.assert_any_call("Error: invalid port: 99999")
 
 
 if __name__ == "__main__":

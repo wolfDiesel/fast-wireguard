@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 @dataclass
 class Server:
-    """Модель сервера WireGuard"""
+    """WireGuard server model"""
 
     id: Optional[int]
     interface: str
@@ -20,7 +20,7 @@ class Server:
 
     @classmethod
     def create_table(cls, conn: sqlite3.Connection) -> None:
-        """Создает таблицу сервера в базе данных"""
+        """Creates server table in database"""
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -41,7 +41,7 @@ class Server:
         conn.commit()
 
     def to_dict(self) -> dict[str, Any]:
-        """Преобразует сервер в словарь"""
+        """Converts server to dictionary"""
         return {
             "id": self.id,
             "interface": self.interface,

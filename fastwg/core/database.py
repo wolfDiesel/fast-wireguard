@@ -6,69 +6,61 @@ from ..models import Client, Server
 
 
 class Database:
-    """Класс для работы с базой данных SQLite"""
+    """SQLite database management class"""
 
     def __init__(self, db_path: str = "wireguard.db") -> None:
         self.db_path = db_path
         self._init_database()
 
     def _init_database(self) -> None:
-        """Инициализация базы данных"""
+        """Initializes database"""
         conn = sqlite3.connect(self.db_path)
 
-        # Создаем таблицы
         Client.create_table(conn)
         Server.create_table(conn)
 
-        # Мигрируем БД при необходимости
         self._migrate_database(conn)
 
         conn.close()
 
     def _migrate_database(self, conn: sqlite3.Connection) -> None:
-        """Мигрирует базу данных при необходимости"""
+        """Migrates database if needed"""
         cursor = conn.cursor()
 
-        # Проверяем существование колонки config_path
         try:
             cursor.execute("SELECT config_path FROM clients LIMIT 1")
         except sqlite3.OperationalError:
-            # Колонка не существует, добавляем её
             try:
-                print("Миграция БД: добавляем колонку config_path...")
+                print("DB migration: adding config_path column...")
                 cursor.execute("ALTER TABLE clients ADD COLUMN config_path TEXT")
                 conn.commit()
-                print("✓ Миграция завершена")
+                print("✓ Migration completed")
             except sqlite3.OperationalError as e:
                 if "readonly" in str(e).lower():
-                    # Для тестов с readonly БД просто игнорируем
-                    print("Миграция пропущена (readonly БД)")
+                    print("Migration skipped (readonly DB)")
                 else:
                     raise
 
-        # Проверяем существование колонки external_ip в таблице server
         try:
             cursor.execute("SELECT external_ip FROM server LIMIT 1")
         except sqlite3.OperationalError:
-            # Колонка не существует, добавляем её
             try:
-                print("Миграция БД: добавляем колонку external_ip...")
+                print("DB migration: adding external_ip column...")
                 cursor.execute("ALTER TABLE server ADD COLUMN external_ip TEXT")
                 conn.commit()
-                print("✓ Миграция external_ip завершена")
+                print("✓ external_ip migration completed")
             except sqlite3.OperationalError as e:
                 if "readonly" in str(e).lower():
-                    # Для тестов с readonly БД просто игнорируем
-                    print("Миграция external_ip пропущена (readonly БД)")
+                    print("external_ip migration skipped (readonly DB)")
                 else:
                     raise
 
     def get_connection(self):
-        """Получает соединение с базой данных"""
+        """Gets database connection"""
         return sqlite3.connect(self.db_path)
 
     def add_client(self, client: Client) -> bool:
-        """Добавляет клиента в базу данных"""
+        """Adds client to database"""
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
@@ -98,7 +90,7 @@ class Database:
             return False
 
     def get_client(self, name: str) -> Optional[Client]:
-        """Получает клиента по имени"""
+        """Gets client by name"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -129,7 +121,7 @@ class Database:
         return None
 
     def get_all_clients(self) -> List[Client]:
-        """Получает всех клиентов"""
+        """Gets all clients"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -149,7 +141,9 @@ class Database:
                     public_key=row[2],
                     private_key=row[3],
                     ip_address=row[4],
-                    created_at=datetime.fromisoformat(row[5]) if row[5] else datetime.now(),
+                    created_at=(
+                        datetime.fromisoformat(row[5]) if row[5] else datetime.now()
+                    ),
                     is_active=bool(row[6]),
                     is_blocked=bool(row[7]),
                     last_seen=datetime.fromisoformat(row[8]) if row[8] else None,
@@ -161,7 +155,7 @@ class Database:
         return clients
 
     def delete_client(self, name: str) -> bool:
-        """Удаляет клиента по имени"""
+        """Deletes client by name"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -172,8 +166,10 @@ class Database:
         conn.close()
         return deleted
 
-    def update_client_status(self, name: str, is_active: bool, is_blocked: bool) -> bool:
-        """Обновляет статус клиента"""
+    def update_client_status(
+        self, name: str, is_active: bool, is_blocked: bool
+    ) -> bool:
+        """Updates client status"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -190,7 +186,7 @@ class Database:
         return updated
 
     def update_client_last_seen(self, name: str, last_seen: datetime) -> bool:
-        """Обновляет время последнего подключения клиента"""
+        """Updates client last seen time"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -207,7 +203,7 @@ class Database:
         return updated
 
     def save_server_config(self, server: Server) -> bool:
-        """Сохраняет конфигурацию сервера"""
+        """Saves server configuration"""
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
@@ -239,7 +235,7 @@ class Database:
             return False
 
     def get_server_config(self) -> Optional[Server]:
-        """Получает конфигурацию сервера"""
+        """Gets server configuration"""
         conn = self.get_connection()
         cursor = conn.cursor()
 

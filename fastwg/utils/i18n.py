@@ -11,7 +11,9 @@ class I18nManager:
     """Internationalization manager"""
 
     def __init__(self, locale_dir: Optional[str] = None) -> None:
-        self.locale_dir = locale_dir or os.path.join(os.path.dirname(os.path.dirname(__file__)), "locale")
+        self.locale_dir = locale_dir or os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "locale"
+        )
         self.current_language = "en"
         self._translation: Optional[gettext_module.NullTranslations] = None
         self._setup_translation()
@@ -36,7 +38,9 @@ class I18nManager:
         try:
             if language == "ru":
                 # For Russian, use our custom translations
-                self._translation = gettext_module.translation("fastwg", self.locale_dir, languages=["ru"], fallback=True)
+                self._translation = gettext_module.translation(
+                    "fastwg", self.locale_dir, languages=["ru"], fallback=True
+                )
             else:
                 # For English, use no translation (identity)
                 self._translation = gettext_module.NullTranslations()

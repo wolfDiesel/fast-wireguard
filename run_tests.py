@@ -5,7 +5,7 @@ import sys
 import os
 
 def run_all_tests():
-    """Запускает все тесты проекта"""
+    """Runs all project tests"""
     
     # Добавляем путь к модулям проекта
     sys.path.insert(0, os.path.dirname(__file__))

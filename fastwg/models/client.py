@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 @dataclass
 class Client:
-    """Модель клиента WireGuard"""
+    """WireGuard client model"""
 
     id: Optional[int]
     name: str
@@ -21,7 +21,7 @@ class Client:
 
     @classmethod
     def create_table(cls, conn: sqlite3.Connection) -> None:
-        """Создает таблицу клиентов в базе данных"""
+        """Creates clients table in database"""
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -42,7 +42,7 @@ class Client:
         conn.commit()
 
     def to_dict(self) -> dict[str, Any]:
-        """Преобразует клиента в словарь"""
+        """Converts client to dictionary"""
         return {
             "id": self.id,
             "name": self.name,
