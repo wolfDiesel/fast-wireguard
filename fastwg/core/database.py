@@ -46,6 +46,23 @@ class Database:
                 else:
                     raise
 
+        # Проверяем существование колонки external_ip в таблице server
+        try:
+            cursor.execute("SELECT external_ip FROM server LIMIT 1")
+        except sqlite3.OperationalError:
+            # Колонка не существует, добавляем её
+            try:
+                print("Миграция БД: добавляем колонку external_ip...")
+                cursor.execute("ALTER TABLE server ADD COLUMN external_ip TEXT")
+                conn.commit()
+                print("✓ Миграция external_ip завершена")
+            except sqlite3.OperationalError as e:
+                if "readonly" in str(e).lower():
+                    # Для тестов с readonly БД просто игнорируем
+                    print("Миграция external_ip пропущена (readonly БД)")
+                else:
+                    raise
+
     def get_connection(self):
         """Получает соединение с базой данных"""
         return sqlite3.connect(self.db_path)
@@ -198,8 +215,8 @@ class Database:
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO server
-                (interface, private_key, public_key, address, port, dns, mtu, config_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (interface, private_key, public_key, address, port, dns, mtu, config_path, external_ip)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     server.interface,
@@ -210,6 +227,7 @@ class Database:
                     server.dns,
                     server.mtu,
                     server.config_path,
+                    server.external_ip,
                 ),
             )
 
@@ -227,7 +245,7 @@ class Database:
 
         cursor.execute(
             """
-            SELECT id, interface, private_key, public_key, address, port, dns, mtu, config_path
+            SELECT id, interface, private_key, public_key, address, port, dns, mtu, config_path, external_ip
             FROM server LIMIT 1
         """
         )
@@ -246,5 +264,6 @@ class Database:
                 dns=row[6],
                 mtu=row[7],
                 config_path=row[8],
+                external_ip=row[9],
             )
         return None

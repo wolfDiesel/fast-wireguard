@@ -16,6 +16,7 @@ class Server:
     dns: str
     mtu: int
     config_path: str
+    external_ip: Optional[str]
 
     @classmethod
     def create_table(cls, conn: sqlite3.Connection) -> None:
@@ -32,7 +33,8 @@ class Server:
                 port INTEGER NOT NULL,
                 dns TEXT NOT NULL,
                 mtu INTEGER DEFAULT 1420,
-                config_path TEXT NOT NULL
+                config_path TEXT NOT NULL,
+                external_ip TEXT
             )
         """
         )
@@ -50,4 +52,5 @@ class Server:
             "dns": self.dns,
             "mtu": self.mtu,
             "config_path": self.config_path,
+            "external_ip": self.external_ip,
         }

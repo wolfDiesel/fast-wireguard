@@ -104,6 +104,7 @@ class WireGuardManager:
                     dns=server_config.get("DNS", "8.8.8.8"),
                     mtu=int(server_config.get("MTU", 1420)),
                     config_path=config_path,
+                    external_ip=None,  # Пока None, нужно будет установить вручную
                 )
                 self.db.save_server_config(server)
 
@@ -401,8 +402,8 @@ AllowedIPs = {client.ip_address}/32
             print("Конфигурация сервера не найдена")
             return ""
 
-        # Получаем IP сервера
-        server_ip = server_config.address.split("/")[0]  # Убираем маску
+        # Получаем IP сервера (внешний IP или внутренний как fallback)
+        server_ip = server_config.external_ip if server_config.external_ip else server_config.address.split("/")[0]
 
         # Сохраняем приватный ключ клиента
         private_key_file = f"./wireguard/keys/{client.name}_private.key"
@@ -658,6 +659,26 @@ PersistentKeepalive = 15
                 return False
         except Exception as e:
             print(f"Ошибка перезагрузки конфигурации: {e}")
+            return False
+
+    def set_external_ip(self, external_ip: str) -> bool:
+        """Устанавливает внешний IP сервера"""
+        try:
+            server_config = self.db.get_server_config()
+            if not server_config:
+                print("Конфигурация сервера не найдена")
+                return False
+
+            # Обновляем внешний IP
+            server_config.external_ip = external_ip
+            if self.db.save_server_config(server_config):
+                print(f"✓ Внешний IP сервера установлен: {external_ip}")
+                return True
+            else:
+                print("✗ Ошибка сохранения внешнего IP")
+                return False
+        except Exception as e:
+            print(f"Ошибка установки внешнего IP: {e}")
             return False
 
     def _restart_wireguard(self, interface: str) -> bool:
