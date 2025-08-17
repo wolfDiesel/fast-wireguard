@@ -12,7 +12,7 @@ class TestClientConfigGeneration(unittest.TestCase):
     def setUp(self):
         """Set up test environment with mocked database"""
         self.mock_db = Mock()
-        with patch('os.makedirs'):
+        with patch("os.makedirs"):
             self.wg_manager = WireGuardManager()
         self.wg_manager.db = self.mock_db
 
@@ -51,20 +51,17 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations and directory creation
-        with patch('builtins.open', create=True) as mock_open, \
-             patch('os.chmod') as mock_chmod:
-            
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
+
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
             # Call the method that generates client config
             config_path = self.wg_manager._create_client_config(client)
 
-
-
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
-            
+
             # Get the written content from the last call (config file)
             written_content = mock_file.write.call_args_list[-1][0][0]
 
@@ -113,8 +110,7 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch('builtins.open', create=True) as mock_open, \
-             patch('os.chmod') as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
@@ -123,7 +119,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
-            
+
             # Get the written content from the last call (config file)
             written_content = mock_file.write.call_args_list[-1][0][0]
 
@@ -171,8 +167,7 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch('builtins.open', create=True) as mock_open, \
-             patch('os.chmod') as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
@@ -181,7 +176,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
-            
+
             # Get the written content from the last call (config file)
             written_content = mock_file.write.call_args_list[-1][0][0]
 
@@ -223,8 +218,7 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch('builtins.open', create=True) as mock_open, \
-             patch('os.chmod') as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
@@ -233,7 +227,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
-            
+
             # Get the written content from the last call (config file)
             written_content = mock_file.write.call_args_list[-1][0][0]
 
@@ -275,8 +269,7 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch('builtins.open', create=True) as mock_open, \
-             patch('os.chmod') as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
@@ -285,7 +278,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
-            
+
             # Get the written content from the last call (config file)
             written_content = mock_file.write.call_args_list[-1][0][0]
 
@@ -327,8 +320,7 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.save_server_config.return_value = True
 
         # Mock file operations
-        with patch('builtins.open', create=True) as mock_open, \
-             patch('os.chmod') as mock_chmod:
+        with patch("builtins.open", create=True) as mock_open, patch("os.chmod") as mock_chmod:
             mock_file = MagicMock()
             mock_open.return_value.__enter__.return_value = mock_file
 
@@ -337,7 +329,7 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify files were opened for writing (private key, public key, config)
             self.assertEqual(mock_open.call_count, 3)
-            
+
             # Get the written content from the last call (config file)
             written_content = mock_file.write.call_args_list[-1][0][0]
 
@@ -359,8 +351,8 @@ class TestClientConfigGeneration(unittest.TestCase):
                 self.assertIn(line, written_content)
 
             # Verify config ends with newline
-            self.assertTrue(written_content.endswith('\n'))
+            self.assertTrue(written_content.endswith("\n"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
