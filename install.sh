@@ -182,33 +182,7 @@ create_alias() {
     fi
 }
 
-# Создание systemd сервиса
-create_systemd_service() {
-    print_info "Создание systemd сервиса..."
-    
-    read -p "Создать systemd сервис? (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        cat > /etc/systemd/system/fastwg.service << EOF
-[Unit]
-Description=FastWG WireGuard Manager
-After=network.target
 
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/usr/bin/fastwg status
-User=root
-
-[Install]
-WantedBy=multi-user.target
-EOF
-        
-        systemctl daemon-reload
-        systemctl enable fastwg.service
-        print_success "Systemd сервис создан и включен"
-    fi
-}
 
 # Автоматический скан после установки
 auto_scan_after_install() {
@@ -243,7 +217,6 @@ main() {
     install_fastwg
     verify_installation
     create_alias
-    create_systemd_service
     
     # Автоматический скан после установки
     auto_scan_after_install
@@ -286,10 +259,7 @@ case "${1:-}" in
         rm -f /usr/local/bin/fastwg
         rm -f /usr/bin/fastwg
         
-        # Удаляем systemd сервис
-        systemctl disable fastwg.service 2>/dev/null || true
-        rm -f /etc/systemd/system/fastwg.service
-        systemctl daemon-reload
+
         
         # Удаляем конфигурационные файлы
         print_info "Удаление конфигурационных файлов..."
