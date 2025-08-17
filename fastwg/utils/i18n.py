@@ -6,7 +6,6 @@ import gettext as gettext_module
 import os
 
 
-
 class I18nManager:
     """Internationalization manager"""
 
