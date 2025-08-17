@@ -249,5 +249,29 @@ def sethost(host: str) -> None:
         click.echo(f"{Fore.RED}{_('✗ Failed to set host')}{Style.RESET_ALL}")
 
 
+@cli.command()
+@click.option("--interface", default="wg0", help="Interface name")
+@click.option("--port", default=51820, help="Listen port")
+@click.option("--network", default="10.42.42.0/24", help="Network address")
+@click.option("--dns", default="8.8.8.8", help="DNS server")
+def init(interface: str, port: int, network: str, dns: str) -> None:
+    """Initialize WireGuard server configuration"""
+    click.echo(f"{Fore.YELLOW}{_('Initializing WireGuard server configuration...')}{Style.RESET_ALL}")
+    
+    wg_manager = WireGuardManager()
+    if wg_manager.init_server_config(interface, port, network, dns):
+        click.echo(f"{Fore.GREEN}{_('✓ Server configuration initialized successfully')}{Style.RESET_ALL}")
+        click.echo(f"  {_('Interface')}: {interface}")
+        click.echo(f"  {_('Port')}: {port}")
+        click.echo(f"  {_('Network')}: {network}")
+        click.echo(f"  {_('DNS')}: {dns}")
+        click.echo(f"\n{_('Next steps:')}")
+        click.echo(f"  1. {_('Set external host')}: fastwg sethost <your_ip>:<port>")
+        click.echo(f"  2. {_('Start server')}: fastwg start")
+        click.echo(f"  3. {_('Create clients')}: fastwg create <client_name>")
+    else:
+        click.echo(f"{Fore.RED}{_('✗ Failed to initialize server configuration')}{Style.RESET_ALL}")
+
+
 if __name__ == "__main__":
     cli()

@@ -407,7 +407,7 @@ AllowedIPs = {client.ip_address}/32
             print("Ошибка: внешний IP сервера не установлен")
             print("Используйте команду: fastwg sethost <ip:port>")
             return ""
-
+        
         # Получаем IP сервера из базы данных
         server_ip = server_config.external_ip
 
@@ -667,6 +667,62 @@ PersistentKeepalive = 15
             print(f"Ошибка перезагрузки конфигурации: {e}")
             return False
 
+    def init_server_config(self, interface: str = "wg0", port: int = 51820, network: str = "10.42.42.0/24", dns: str = "8.8.8.8") -> bool:
+        """Инициализирует конфигурацию сервера WireGuard"""
+        try:
+            # Проверяем, что конфигурация еще не существует
+            existing_config = self.db.get_server_config()
+            if existing_config:
+                print("Конфигурация сервера уже существует")
+                return False
+
+            # Генерируем ключи
+            private_key = self._generate_private_key()
+            public_key = self._generate_public_key(private_key)
+
+            # Создаем конфигурацию сервера
+            server_config_content = f"""[Interface]
+PrivateKey = {private_key}
+Address = {network.replace('/24', '/24')}
+ListenPort = {port}
+DNS = {dns}
+
+# Включаем IP forwarding
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+"""
+
+            # Сохраняем конфигурацию в файл
+            config_path = os.path.join(self.config_dir, f"{interface}.conf")
+            with open(config_path, "w") as f:
+                f.write(server_config_content)
+
+            # Устанавливаем правильные права доступа
+            os.chmod(config_path, 0o600)
+
+            # Сохраняем в базу данных
+            server = Server(
+                id=None,
+                interface=interface,
+                private_key=private_key,
+                public_key=public_key,
+                address=network,
+                port=port,
+                dns=dns,
+                external_ip=None
+            )
+
+            if self.db.save_server_config(server):
+                print(f"✓ Конфигурация сервера создана: {config_path}")
+                return True
+            else:
+                print("✗ Ошибка сохранения в базу данных")
+                return False
+
+        except Exception as e:
+            print(f"Ошибка создания конфигурации сервера: {e}")
+            return False
+
     def set_host(self, host: str) -> bool:
         """Устанавливает внешний хост (IP:port) сервера"""
         try:
@@ -674,18 +730,17 @@ PersistentKeepalive = 15
             if ":" not in host:
                 print("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
                 return False
-
+            
             external_ip, port_str = host.split(":", 1)
-
+            
             # Проверяем IP
             import ipaddress
-
             try:
                 ipaddress.ip_address(external_ip)
             except ValueError:
                 print(f"Ошибка: неверный IP адрес: {external_ip}")
                 return False
-
+            
             # Проверяем порт
             try:
                 port = int(port_str)
@@ -694,7 +749,7 @@ PersistentKeepalive = 15
             except ValueError:
                 print(f"Ошибка: неверный порт: {port_str}")
                 return False
-
+            
             server_config = self.db.get_server_config()
             if not server_config:
                 print("Конфигурация сервера не найдена")
