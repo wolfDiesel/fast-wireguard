@@ -198,5 +198,45 @@ def status() -> None:
         click.echo(f"{Fore.RED}{_('✗ WireGuard is not installed')}{Style.RESET_ALL}")
 
 
+@cli.command()
+def start() -> None:
+    """Start WireGuard server"""
+    wg_manager = WireGuardManager()
+    if wg_manager.start_server():
+        click.echo(f"{Fore.GREEN}{_('✓ Server started successfully')}{Style.RESET_ALL}")
+    else:
+        click.echo(f"{Fore.RED}{_('✗ Failed to start server')}{Style.RESET_ALL}")
+
+
+@cli.command()
+def stop() -> None:
+    """Stop WireGuard server"""
+    wg_manager = WireGuardManager()
+    if wg_manager.stop_server():
+        click.echo(f"{Fore.GREEN}{_('✓ Server stopped successfully')}{Style.RESET_ALL}")
+    else:
+        click.echo(f"{Fore.RED}{_('✗ Failed to stop server')}{Style.RESET_ALL}")
+
+
+@cli.command()
+def restart() -> None:
+    """Restart WireGuard server"""
+    wg_manager = WireGuardManager()
+    if wg_manager.restart_server():
+        click.echo(f"{Fore.GREEN}{_('✓ Server restarted successfully')}{Style.RESET_ALL}")
+    else:
+        click.echo(f"{Fore.RED}{_('✗ Failed to restart server')}{Style.RESET_ALL}")
+
+
+@cli.command()
+def reload() -> None:
+    """Reload server configuration"""
+    wg_manager = WireGuardManager()
+    if wg_manager.reload_config():
+        click.echo(f"{Fore.GREEN}{_('✓ Configuration reloaded successfully')}{Style.RESET_ALL}")
+    else:
+        click.echo(f"{Fore.RED}{_('✗ Failed to reload configuration')}{Style.RESET_ALL}")
+
+
 if __name__ == "__main__":
     cli()

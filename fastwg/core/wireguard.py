@@ -172,8 +172,8 @@ class WireGuardManager:
 
         # Сохраняем в базу
         if self.db.add_client(client):
-            # Обновляем конфигурацию сервера
-            self._update_server_config()
+            # Обновляем конфигурацию сервера (без перезапуска)
+            self._update_server_config(restart=False)
             # Создаем конфигурационный файл клиента
             self._create_client_config(client)
             return client
@@ -225,8 +225,8 @@ class WireGuardManager:
 
         # Обновляем статус в базе
         if self.db.update_client_status(name, is_active=True, is_blocked=False):
-            # Обновляем конфигурацию сервера
-            self._update_server_config()
+            # Обновляем конфигурацию сервера (без перезапуска)
+            self._update_server_config(restart=False)
             return True
         return False
 
@@ -318,7 +318,7 @@ class WireGuardManager:
 
         raise Exception("Нет свободных IP адресов в сети")
 
-    def _update_server_config(self):
+    def _update_server_config(self, restart: bool = False):
         """Обновляет конфигурацию сервера"""
         server_config = self.db.get_server_config()
         if not server_config:
@@ -354,8 +354,9 @@ AllowedIPs = {client.ip_address}/32
         # Устанавливаем правильные права
         os.chmod(config_path, 0o600)
 
-        # Перезапускаем WireGuard
-        self._restart_wireguard(server_config.interface)
+        # Перезапускаем WireGuard только если явно запрошено
+        if restart:
+            self._restart_wireguard(server_config.interface)
 
     def _create_client_config(self, client: Client):
         """Создает конфигурационный файл для клиента"""
@@ -509,8 +510,96 @@ PersistentKeepalive = 25
         # 3. В остальных случаях - активен
         return True
 
+    def start_server(self, interface: str = None) -> bool:
+        """Запускает WireGuard сервер"""
+        try:
+            if not interface:
+                server_config = self.db.get_server_config()
+                if not server_config:
+                    print("Конфигурация сервера не найдена")
+                    return False
+                interface = server_config.interface
+
+            result = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
+            if result.returncode == 0:
+                print(f"✓ WireGuard сервер {interface} запущен")
+                return True
+            else:
+                print(f"✗ Ошибка запуска WireGuard сервера: {result.stderr}")
+                return False
+        except Exception as e:
+            print(f"Ошибка запуска WireGuard: {e}")
+            return False
+
+    def stop_server(self, interface: str = None) -> bool:
+        """Останавливает WireGuard сервер"""
+        try:
+            if not interface:
+                server_config = self.db.get_server_config()
+                if not server_config:
+                    print("Конфигурация сервера не найдена")
+                    return False
+                interface = server_config.interface
+
+            result = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
+            if result.returncode == 0:
+                print(f"✓ WireGuard сервер {interface} остановлен")
+                return True
+            else:
+                print(f"✗ Ошибка остановки WireGuard сервера: {result.stderr}")
+                return False
+        except Exception as e:
+            print(f"Ошибка остановки WireGuard: {e}")
+            return False
+
+    def restart_server(self, interface: str = None) -> bool:
+        """Перезапускает WireGuard сервер"""
+        try:
+            if not interface:
+                server_config = self.db.get_server_config()
+                if not server_config:
+                    print("Конфигурация сервера не найдена")
+                    return False
+                interface = server_config.interface
+
+            print(f"Перезапуск WireGuard сервера {interface}...")
+
+            # Останавливаем сервер
+            if not self.stop_server(interface):
+                return False
+
+            # Небольшая пауза
+            import time
+
+            time.sleep(1)
+
+            # Запускаем сервер
+            if not self.start_server(interface):
+                return False
+
+            print(f"✓ WireGuard сервер {interface} перезапущен")
+            return True
+        except Exception as e:
+            print(f"Ошибка перезапуска WireGuard: {e}")
+            return False
+
+    def reload_config(self) -> bool:
+        """Перезагружает конфигурацию сервера с перезапуском"""
+        try:
+            server_config = self.db.get_server_config()
+            if not server_config:
+                print("Конфигурация сервера не найдена")
+                return False
+
+            # Обновляем конфигурацию с перезапуском
+            self._update_server_config(restart=True)
+            return True
+        except Exception as e:
+            print(f"Ошибка перезагрузки конфигурации: {e}")
+            return False
+
     def _restart_wireguard(self, interface: str) -> None:
-        """Перезапускает WireGuard интерфейс"""
+        """Перезапускает WireGuard интерфейс (внутренний метод)"""
         try:
             # Останавливаем интерфейс
             subprocess.run(["wg-quick", "down", interface], check=False)
