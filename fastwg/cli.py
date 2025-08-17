@@ -129,9 +129,6 @@ def cat(name: str) -> None:
         click.echo(f"{Fore.RED}{_('Client {} not found or configuration missing').format(name)}{Style.RESET_ALL}")
 
 
-
-
-
 @cli.command()
 @click.option("--all", "-a", is_flag=True, help=_("Show all clients including inactive and blocked"))
 def list(all: bool) -> None:

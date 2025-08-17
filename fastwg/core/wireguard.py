@@ -159,18 +159,20 @@ class WireGuardManager:
         ip_address = self._get_next_ip()
 
         # Создаем конфигурационный файл клиента
-        config_path = self._create_client_config(Client(
-            id=None,
-            name=name,
-            public_key=public_key,
-            private_key=private_key,
-            ip_address=ip_address,
-            created_at=datetime.now(),
-            is_active=True,
-            is_blocked=False,
-            last_seen=None,
-            config_path=None,  # Временно None
-        ))
+        config_path = self._create_client_config(
+            Client(
+                id=None,
+                name=name,
+                public_key=public_key,
+                private_key=private_key,
+                ip_address=ip_address,
+                created_at=datetime.now(),
+                is_active=True,
+                is_blocked=False,
+                last_seen=None,
+                config_path=None,  # Временно None
+            )
+        )
 
         if not config_path:
             print(f"Ошибка создания конфигурации для клиента {name}")
@@ -256,7 +258,7 @@ class WireGuardManager:
 
         # Используем путь из БД, если есть
         config_file = client.config_path if client.config_path else f"./wireguard/configs/{name}.conf"
-        
+
         if os.path.exists(config_file):
             with open(config_file, "r") as f:
                 return f.read()
@@ -270,13 +272,13 @@ class WireGuardManager:
         result = []
         for client in clients:
             is_connected = client.public_key in active_connections
-            
+
             # Обновляем last_seen для подключенных клиентов
             if is_connected:
                 self.db.update_client_last_seen(client.name, datetime.now())
                 # Обновляем объект клиента для отображения
                 client.last_seen = datetime.now()
-            
+
             result.append(
                 {
                     "name": client.name,
@@ -327,7 +329,7 @@ class WireGuardManager:
 
         # Добавляем IP сервера в исключения
         if server_config:
-            server_ip = server_config.address.split('/')[0]  # Убираем маску
+            server_ip = server_config.address.split("/")[0]  # Убираем маску
             existing_ips.add(server_ip)
 
         # Ищем свободный IP
@@ -386,7 +388,7 @@ AllowedIPs = {client.ip_address}/32
             return ""
 
         # Получаем IP сервера
-        server_ip = server_config.address.split('/')[0]  # Убираем маску
+        server_ip = server_config.address.split("/")[0]  # Убираем маску
 
         # Сохраняем приватный ключ клиента
         private_key_file = f"./wireguard/keys/{client.name}_private.key"
@@ -421,8 +423,6 @@ PersistentKeepalive = 15
         os.chmod(config_file, 0o600)
 
         return config_file
-
-
 
     def _remove_peer_from_wg(self, public_key: str):
         """Удаляет peer из WireGuard интерфейса"""
@@ -558,7 +558,7 @@ PersistentKeepalive = 15
                     print("Конфигурация сервера не найдена")
                     return False
                 interface = server_config.interface
-            
+
             result = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
             if result.returncode == 0:
                 print(f"✓ WireGuard сервер {interface} запущен")
@@ -579,7 +579,7 @@ PersistentKeepalive = 15
                     print("Конфигурация сервера не найдена")
                     return False
                 interface = server_config.interface
-            
+
             result = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
             if result.returncode == 0:
                 print(f"✓ WireGuard сервер {interface} остановлен")
@@ -600,21 +600,22 @@ PersistentKeepalive = 15
                     print("Конфигурация сервера не найдена")
                     return False
                 interface = server_config.interface
-            
+
             print(f"Перезапуск WireGuard сервера {interface}...")
-            
+
             # Останавливаем сервер
             if not self.stop_server(interface):
                 return False
-            
+
             # Небольшая пауза
             import time
+
             time.sleep(1)
-            
+
             # Запускаем сервер
             if not self.start_server(interface):
                 return False
-            
+
             print(f"✓ WireGuard сервер {interface} перезапущен")
             return True
         except Exception as e:
@@ -628,7 +629,7 @@ PersistentKeepalive = 15
             if not server_config:
                 print("Конфигурация сервера не найдена")
                 return False
-            
+
             # Обновляем конфигурацию с перезапуском
             self._update_server_config(restart=True)
             return True

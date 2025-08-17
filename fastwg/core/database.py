@@ -19,7 +19,7 @@ class Database:
         # Создаем таблицы
         Client.create_table(conn)
         Server.create_table(conn)
-        
+
         # Мигрируем БД при необходимости
         self._migrate_database(conn)
 
@@ -28,7 +28,7 @@ class Database:
     def _migrate_database(self, conn: sqlite3.Connection) -> None:
         """Мигрирует базу данных при необходимости"""
         cursor = conn.cursor()
-        
+
         # Проверяем существование колонки config_path
         try:
             cursor.execute("SELECT config_path FROM clients LIMIT 1")
