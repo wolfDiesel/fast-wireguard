@@ -90,11 +90,15 @@ class WireGuardManager:
 
             # Сохраняем конфигурацию сервера
             if server_config:
+                private_key = server_config.get("PrivateKey", "")
+                # Генерируем публичный ключ из приватного
+                public_key = self._generate_public_key(private_key) if private_key else ""
+
                 server = Server(
                     id=None,
                     interface=os.path.basename(config_path).replace(".conf", ""),
-                    private_key=server_config.get("PrivateKey", ""),
-                    public_key=server_config.get("PublicKey", ""),
+                    private_key=private_key,
+                    public_key=public_key,
                     address=server_config.get("Address", ""),
                     port=int(server_config.get("ListenPort", 51820)),
                     dns=server_config.get("DNS", "8.8.8.8"),
