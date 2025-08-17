@@ -267,18 +267,20 @@ class WireGuardManager:
     def _generate_private_key(self) -> str:
         """Генерирует приватный ключ WireGuard"""
         private_key = x25519.X25519PrivateKey.generate()
-        return private_key.private_bytes(
+        private_bytes = private_key.private_bytes(
             encoding=serialization.Encoding.Raw,
             format=serialization.PrivateFormat.Raw,
             encryption_algorithm=serialization.NoEncryption(),
-        ).hex()
+        )
+        return str(private_bytes.hex())
 
     def _generate_public_key(self, private_key_hex: str) -> str:
         """Генерирует публичный ключ из приватного"""
         private_key_bytes = bytes.fromhex(private_key_hex)
         private_key = x25519.X25519PrivateKey.from_private_bytes(private_key_bytes)
         public_key = private_key.public_key()
-        return public_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw).hex()
+        public_bytes = public_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
+        return str(public_bytes.hex())
 
     def _get_next_ip(self) -> str:
         """Получает следующий свободный IP адрес"""
