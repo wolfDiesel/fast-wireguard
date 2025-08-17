@@ -65,7 +65,7 @@ class WireGuardManager:
             
             for line in lines:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line:
                     continue
                 
                 if line.startswith('[Interface]'):
@@ -75,6 +75,12 @@ class WireGuardManager:
                     current_section = 'peer'
                     current_client = {}
                     clients.append(current_client)
+                elif line.startswith('#'):
+                    # Сохраняем комментарии как потенциальные имена клиентов
+                    if current_section == 'peer' and current_client is not None:
+                        comment = line[1:].strip()
+                        if comment and not comment.startswith(' ') and not comment.startswith('\t'):
+                            current_client['Name'] = comment
                 elif current_section == 'interface':
                     if '=' in line:
                         key, value = line.split('=', 1)
@@ -100,10 +106,16 @@ class WireGuardManager:
                 self.db.save_server_config(server)
             
             # Импортируем клиентов
-            for client_data in clients:
+            for i, client_data in enumerate(clients, 1):
                 if 'PublicKey' in client_data:
-                    # Генерируем имя клиента если нет
-                    client_name = client_data.get('Name', f"imported_{len(clients)}")
+                    # Генерируем уникальное имя клиента
+                    client_name = client_data.get('Name', f"imported_{i}")
+                    
+                    # Проверяем, не существует ли уже клиент с таким именем
+                    existing_client = self.db.get_client(client_name)
+                    if existing_client:
+                        # Если клиент существует, пропускаем его
+                        continue
                     
                     # Генерируем приватный ключ если нет
                     if 'PrivateKey' not in client_data:
