@@ -1,4 +1,108 @@
-# Быстрый старт FastWG
+# FastWG Quick Start
+
+## One-command installation
+
+```bash
+curl -sSL https://raw.githubusercontent.com/wolfDiesel/fast-wireguard/main/install.sh | sudo bash
+```
+
+## First steps
+
+1. **Scan existing configurations:**
+```bash
+sudo fastwg scan
+```
+
+2. **Create first client:**
+```bash
+sudo fastwg create myclient
+```
+
+3. **View client list:**
+```bash
+sudo fastwg list
+```
+
+4. **View client configuration:**
+```bash
+sudo fastwg cat myclient
+```
+
+## Basic commands
+
+| Command | Description |
+|---------|-------------|
+| `fastwg scan` | Scan existing configurations |
+| `fastwg create <name>` | Create new client |
+| `fastwg delete <name>` | Delete client |
+| `fastwg disable <name>` | Disable client |
+| `fastwg enable <name>` | Enable client |
+| `fastwg cat <name>` | View configuration |
+| `fastwg list` | List all clients |
+| `fastwg status` | WireGuard server status |
+
+## Usage examples
+
+### Creating multiple clients
+```bash
+sudo fastwg create alice
+sudo fastwg create bob
+sudo fastwg create charlie
+```
+
+### Client management
+```bash
+# View all clients
+sudo fastwg list
+
+# Disable problematic client
+sudo fastwg disable bob
+
+# View configuration
+sudo fastwg cat alice
+
+# Delete inactive client
+sudo fastwg delete charlie
+```
+
+### Using alias
+After installation, the `wg` alias is available:
+```bash
+wg create client
+wg list
+wg cat client
+```
+
+## File structure
+
+```
+wireguard/
+├── configs/          # Client configurations
+│   ├── alice.conf
+│   ├── bob.conf
+│   └── charlie.conf
+└── wireguard.db      # Database
+```
+
+## Uninstallation
+
+```bash
+# Uninstall via installer
+sudo ./install.sh --uninstall
+
+# Or manually
+sudo pip uninstall fastwg
+```
+
+## Full documentation
+
+- [README.md](README.md) - Full documentation
+- [INSTALL.md](INSTALL.md) - Detailed installation instructions
+- [DEMO.md](DEMO.md) - Usage demonstration
+
+---
+
+# Быстрый старт FastWG (Русский)
 
 ## Установка одной командой
 
@@ -93,9 +197,3 @@ sudo ./install.sh --uninstall
 # Или вручную
 sudo pip uninstall fastwg
 ```
-
-## Полная документация
-
-- [README.md](README.md) - Полная документация
-- [INSTALL.md](INSTALL.md) - Подробные инструкции по установке
-- [DEMO.md](DEMO.md) - Демонстрация работы

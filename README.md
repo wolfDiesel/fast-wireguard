@@ -1,48 +1,48 @@
 # Fast WireGuard
 
-Быстрое и простое управление WireGuard сервером через CLI интерфейс.
+Fast and simple WireGuard server management through CLI interface.
 
-## Возможности
+## Features
 
-- 🚀 Быстрое создание и управление WireGuard конфигурациями
-- 📱 Генерация конфигурационных файлов для клиентов
-- 🔐 Безопасное хранение ключей в SQLite базе данных
-- 🔍 Сканирование и импорт существующих конфигураций
-- 📊 Мониторинг активных подключений
-- 🔄 Автоматическое обновление конфигураций сервера
-- 🛡️ Блокировка/разблокировка клиентов
-- 📋 Удобный CLI интерфейс с цветным выводом
+- 🚀 Quick creation and management of WireGuard configurations
+- 📱 Generation of client configuration files
+- 🔐 Secure key storage in SQLite database
+- 🔍 Scanning and importing existing configurations
+- 📊 Monitoring of active connections
+- 🔄 Automatic server configuration updates
+- 🛡️ Client blocking/unblocking
+- 📋 Convenient CLI interface with colored output
 
-## Установка
+## Installation
 
-### Способ 1: Автоматическая установка (рекомендуемый)
+### Method 1: Automatic installation (recommended)
 
 ```bash
-# Скачиваем и запускаем установщик
+# Download and run the installer
 curl -sSL https://raw.githubusercontent.com/wolfDiesel/fast-wireguard/main/install.sh | sudo bash
 ```
 
-### Способ 2: Ручная установка через pip
+### Method 2: Manual installation via pip
 
-1. Клонируйте репозиторий:
+1. Clone the repository:
 ```bash
 git clone https://github.com/wolfDiesel/fast-wireguard.git
 cd fast-wireguard
 ```
 
-2. Установите зависимости:
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Установите утилиту в систему:
+3. Install the utility system-wide:
 ```bash
 sudo pip install -e .
 ```
 
-После установки команда `fastwg` будет доступна глобально.
+After installation, the `fastwg` command will be available globally.
 
-### Способ 2: Установка через setup.py
+### Method 3: Installation via setup.py
 
 ```bash
 git clone https://github.com/wolfDiesel/fast-wireguard.git
@@ -50,82 +50,82 @@ cd fast-wireguard
 sudo python setup.py install
 ```
 
-### Способ 3: Создание пакета и установка
+### Method 4: Package creation and installation
 
 ```bash
 git clone https://github.com/wolfDiesel/fast-wireguard.git
 cd fast-wireguard
 
-# Создаем дистрибутив
+# Create distribution
 python setup.py sdist bdist_wheel
 
-# Устанавливаем созданный пакет
+# Install the created package
 sudo pip install dist/fastwg-1.0.0.tar.gz
 ```
 
-### Проверка установки
+### Installation verification
 
 ```bash
-# Проверяем что команда доступна
+# Check if command is available
 fastwg --version
 
-# Проверяем справку
+# Check help
 fastwg --help
 
-# Проверяем где установлен
+# Check installation location
 which fastwg
 ```
 
-## Использование
+## Usage
 
-**Важно:** Все команды требуют root привилегий (sudo).
+**Important:** All commands require root privileges (sudo).
 
-### Основные команды
+### Basic commands
 
 ```bash
-# Сканировать существующие конфигурации
+# Scan existing configurations
 sudo fastwg scan
 
-# Создать нового клиента
+# Create new client
 sudo fastwg create client_name
 
-# Удалить клиента
+# Delete client
 sudo fastwg delete client_name
 
-# Блокировать клиента
+# Disable client
 sudo fastwg disable client_name
 
-# Разблокировать клиента
+# Enable client
 sudo fastwg enable client_name
 
-# Показать конфигурацию клиента
+# Show client configuration
 sudo fastwg cat client_name
 
-# Список всех клиентов
+# List all clients
 sudo fastwg list
 
-# Статус WireGuard сервера
+# WireGuard server status
 sudo fastwg status
 ```
 
-### Примеры использования
+### Usage examples
 
 ```bash
-# Создание клиента
+# Creating a client
 sudo fastwg create john
-# ✓ Клиент 'john' успешно создан
-#   IP адрес: 10.0.0.2
-#   Конфигурация: ./wireguard/configs/john.conf
+# ✓ Client 'john' successfully created
+#   IP address: 10.0.0.2
+#   Configuration: ./wireguard/configs/john.conf
 
-# Просмотр списка клиентов
+# Viewing client list
 sudo fastwg list
 # +--------+------------+----------------------+----------------------+----------------------+
-# | Имя    | IP адрес   | Статус               | Последнее подключение| Создан              |
+# | Name   | IP Address | Status               | Last Connection     | Created             |
 # +--------+------------+----------------------+----------------------+----------------------+
-# | john   | 10.0.0.2   | Активен, Подключен   | 2024-01-15 14:30:25 | 2024-01-15 14:25:10 |
+# | john   | 10.0.0.2   | Active, Connected    | 2024-01-15 14:30:25 | 2024-01-15 14:25:10 |
 # +--------+------------+----------------------+----------------------+----------------------+
 
-# Просмотр конфигурации клиента
+# Viewing client configuration
 sudo fastwg cat john
 # [Interface]
 # PrivateKey = abc123...
@@ -140,7 +140,7 @@ sudo fastwg cat john
 # PersistentKeepalive = 25
 ```
 
-## Структура проекта
+## Project structure
 
 ```
 fast-wireguard/
@@ -229,6 +229,126 @@ sudo cp -r /etc/wireguard.backup/* /etc/wireguard/
 cp wireguard.db.backup wireguard.db
 ```
 
+## Requirements
+
+- Python 3.8+
+- WireGuard installed on the system
+- Root privileges for WireGuard operations
+- Linux system
+
+## Troubleshooting
+
+### Error "Root privileges required"
+```bash
+# Run commands with sudo
+sudo fastwg create client_name
+```
+
+### Error "WireGuard not installed"
+```bash
+# Install WireGuard
+sudo apt install wireguard  # Ubuntu/Debian
+sudo dnf install wireguard-tools  # Fedora/RHEL
+```
+
+### Error "fastwg command not found"
+```bash
+# Check installation
+pip list | grep fastwg
+
+# Reinstall
+sudo pip install -e . --force-reinstall
+```
+
+### Permission issues
+```bash
+# Check configuration file permissions
+ls -la /etc/wireguard/
+
+# Fix permissions if needed
+sudo chmod 600 /etc/wireguard/*.conf
+```
+
+## License
+
+MIT License
+
+---
+
+# Fast WireGuard (Русский)
+
+Быстрое и простое управление WireGuard сервером через CLI интерфейс.
+
+## Возможности
+
+- 🚀 Быстрое создание и управление WireGuard конфигурациями
+- 📱 Генерация конфигурационных файлов для клиентов
+- 🔐 Безопасное хранение ключей в SQLite базе данных
+- 🔍 Сканирование и импорт существующих конфигураций
+- 📊 Мониторинг активных подключений
+- 🔄 Автоматическое обновление конфигураций сервера
+- 🛡️ Блокировка/разблокировка клиентов
+- 📋 Удобный CLI интерфейс с цветным выводом
+
+## Установка
+
+### Способ 1: Автоматическая установка (рекомендуемый)
+
+```bash
+# Скачиваем и запускаем установщик
+curl -sSL https://raw.githubusercontent.com/wolfDiesel/fast-wireguard/main/install.sh | sudo bash
+```
+
+### Способ 2: Ручная установка через pip
+
+1. Клонируйте репозиторий:
+```bash
+git clone https://github.com/wolfDiesel/fast-wireguard.git
+cd fast-wireguard
+```
+
+2. Установите зависимости:
+```bash
+pip install -r requirements.txt
+```
+
+3. Установите утилиту в систему:
+```bash
+sudo pip install -e .
+```
+
+## Использование
+
+**Важно:** Все команды требуют root привилегий (sudo).
+
+### Основные команды
+
+```bash
+# Сканировать существующие конфигурации
+sudo fastwg scan
+
+# Создать нового клиента
+sudo fastwg create client_name
+
+# Удалить клиента
+sudo fastwg delete client_name
+
+# Блокировать клиента
+sudo fastwg disable client_name
+
+# Разблокировать клиента
+sudo fastwg enable client_name
+
+# Показать конфигурацию клиента
+sudo fastwg cat client_name
+
+# Список всех клиентов
+sudo fastwg list
+
+# Статус WireGuard сервера
+sudo fastwg status
+```
+
 ## Требования
 
 - Python 3.8+
@@ -268,7 +388,3 @@ ls -la /etc/wireguard/
 # Исправьте права если нужно
 sudo chmod 600 /etc/wireguard/*.conf
 ```
-
-## Лицензия
-
-MIT License

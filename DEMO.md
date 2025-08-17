@@ -1,4 +1,128 @@
-# Демонстрация FastWG
+# FastWG Demo
+
+## Installation and setup
+
+```bash
+# Clone repository
+git clone https://github.com/wolfDiesel/fast-wireguard.git
+cd fast-wireguard
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install utility
+pip install -e .
+```
+
+## Basic commands
+
+### 1. Scanning existing configurations
+```bash
+sudo fastwg scan
+```
+This command will find all existing WireGuard configurations in `/etc/wireguard` and offer to import them.
+
+### 2. Creating a new client
+```bash
+sudo fastwg create john
+```
+Creates a new client named "john", generates keys and configuration file.
+
+### 3. Viewing client list
+```bash
+sudo fastwg list
+```
+Shows a table of all clients with their statuses and connection information.
+
+### 4. Viewing client configuration
+```bash
+sudo fastwg cat john
+```
+Outputs the client configuration file for copying to the device.
+
+### 5. Disabling client
+```bash
+sudo fastwg disable john
+```
+Temporarily disconnects the client from the network.
+
+### 6. Enabling client
+```bash
+sudo fastwg enable john
+```
+Returns the client to active state.
+
+### 7. Deleting client
+```bash
+sudo fastwg delete john
+```
+Completely removes the client and its configuration.
+
+### 8. Server status
+```bash
+sudo fastwg status
+```
+Shows the current state of the WireGuard server.
+
+## Complete workflow example
+
+```bash
+# 1. Scan existing configurations
+sudo fastwg scan
+
+# 2. Create several clients
+sudo fastwg create alice
+sudo fastwg create bob
+sudo fastwg create charlie
+
+# 3. View the list
+sudo fastwg list
+
+# 4. View client configuration
+sudo fastwg cat alice
+
+# 5. Disable problematic client
+sudo fastwg disable bob
+
+# 6. Check status
+sudo fastwg status
+
+# 7. Delete inactive client
+sudo fastwg delete charlie
+```
+
+## File structure
+
+After running the utility, the following structure is created:
+
+```
+wireguard/
+├── keys/           # Private keys (if needed)
+├── configs/        # Client configuration files
+│   ├── alice.conf
+│   ├── bob.conf
+│   └── charlie.conf
+└── wireguard.db    # SQLite database with client information
+```
+
+## Features
+
+- **Security**: All configuration files have 600 permissions (owner only)
+- **Automatic management**: Server configuration is automatically updated when creating/deleting clients
+- **Monitoring**: Real-time tracking of active connections
+- **Import**: Ability to import existing configurations
+- **Colored output**: Convenient interface with colored status output
+
+## Requirements
+
+- Python 3.8+
+- WireGuard installed on the system
+- Root privileges for WireGuard operations
+- Linux system
+
+---
+
+# Демонстрация FastWG (Русский)
 
 ## Установка и настройка
 

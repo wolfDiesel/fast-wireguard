@@ -11,7 +11,7 @@ setup(
     version="1.0.0",
     author="wolfDiesel",
     author_email="",
-    description="Быстрое управление WireGuard сервером через CLI",
+    description="Fast WireGuard server management via CLI",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/wolfDiesel/fast-wireguard",
