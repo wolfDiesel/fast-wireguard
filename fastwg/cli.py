@@ -25,7 +25,7 @@ def check_root_privileges() -> None:
 
 
 @click.group()
-@click.version_option(version="1.0.4", prog_name="fastwg")
+@click.version_option(version="1.0.5", prog_name="fastwg")
 def cli():
     """FastWG - Fast WireGuard server management"""
     check_root_privileges()
