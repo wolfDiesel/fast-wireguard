@@ -407,7 +407,7 @@ AllowedIPs = {client.ip_address}/32
             print("Ошибка: внешний IP сервера не установлен")
             print("Используйте команду: fastwg sethost <ip:port>")
             return ""
-        
+
         # Получаем IP сервера из базы данных
         server_ip = server_config.external_ip
 
@@ -667,7 +667,9 @@ PersistentKeepalive = 15
             print(f"Ошибка перезагрузки конфигурации: {e}")
             return False
 
-    def init_server_config(self, interface: str = "wg0", port: int = 51820, network: str = "10.42.42.0/24", dns: str = "8.8.8.8") -> bool:
+    def init_server_config(
+        self, interface: str = "wg0", port: int = 51820, network: str = "10.42.42.0/24", dns: str = "8.8.8.8"
+    ) -> bool:
         """Инициализирует конфигурацию сервера WireGuard"""
         try:
             # Проверяем, что конфигурация еще не существует
@@ -711,7 +713,7 @@ PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACC
                 dns=dns,
                 mtu=1420,
                 config_path=config_path,
-                external_ip=None
+                external_ip=None,
             )
 
             if self.db.save_server_config(server):
@@ -732,17 +734,18 @@ PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACC
             if ":" not in host:
                 print("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
                 return False
-            
+
             external_ip, port_str = host.split(":", 1)
-            
+
             # Проверяем IP
             import ipaddress
+
             try:
                 ipaddress.ip_address(external_ip)
             except ValueError:
                 print(f"Ошибка: неверный IP адрес: {external_ip}")
                 return False
-            
+
             # Проверяем порт
             try:
                 port = int(port_str)
@@ -751,7 +754,7 @@ PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACC
             except ValueError:
                 print(f"Ошибка: неверный порт: {port_str}")
                 return False
-            
+
             server_config = self.db.get_server_config()
             if not server_config:
                 print("Конфигурация сервера не найдена")
