@@ -8,11 +8,11 @@ from ..models import Client, Server
 class Database:
     """Класс для работы с базой данных SQLite"""
 
-    def __init__(self, db_path: str = "wireguard.db"):
+    def __init__(self, db_path: str = "wireguard.db") -> None:
         self.db_path = db_path
         self._init_database()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Инициализация базы данных"""
         conn = sqlite3.connect(self.db_path)
 
@@ -78,7 +78,7 @@ class Database:
                 public_key=row[2],
                 private_key=row[3],
                 ip_address=row[4],
-                created_at=datetime.fromisoformat(row[5]) if row[5] else None,
+                created_at=datetime.fromisoformat(row[5]) if row[5] else datetime.now(),
                 is_active=bool(row[6]),
                 is_blocked=bool(row[7]),
                 last_seen=datetime.fromisoformat(row[8]) if row[8] else None,
@@ -106,7 +106,7 @@ class Database:
                     public_key=row[2],
                     private_key=row[3],
                     ip_address=row[4],
-                    created_at=datetime.fromisoformat(row[5]) if row[5] else None,
+                    created_at=datetime.fromisoformat(row[5]) if row[5] else datetime.now(),
                     is_active=bool(row[6]),
                     is_blocked=bool(row[7]),
                     last_seen=datetime.fromisoformat(row[8]) if row[8] else None,
@@ -122,7 +122,7 @@ class Database:
         cursor = conn.cursor()
 
         cursor.execute("DELETE FROM clients WHERE name = ?", (name,))
-        deleted = cursor.rowcount > 0
+        deleted: bool = cursor.rowcount > 0
 
         conn.commit()
         conn.close()
@@ -140,7 +140,7 @@ class Database:
             (is_active, is_blocked, name),
         )
 
-        updated = cursor.rowcount > 0
+        updated: bool = cursor.rowcount > 0
         conn.commit()
         conn.close()
         return updated
@@ -157,7 +157,7 @@ class Database:
             (last_seen.isoformat(), name),
         )
 
-        updated = cursor.rowcount > 0
+        updated: bool = cursor.rowcount > 0
         conn.commit()
         conn.close()
         return updated

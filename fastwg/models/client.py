@@ -1,7 +1,7 @@
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 
 
 @dataclass
@@ -19,7 +19,7 @@ class Client:
     last_seen: Optional[datetime]
 
     @classmethod
-    def create_table(cls, conn: sqlite3.Connection):
+    def create_table(cls, conn: sqlite3.Connection) -> None:
         """Создает таблицу клиентов в базе данных"""
         cursor = conn.cursor()
         cursor.execute(
@@ -39,7 +39,7 @@ class Client:
         )
         conn.commit()
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Преобразует клиента в словарь"""
         return {
             "id": self.id,

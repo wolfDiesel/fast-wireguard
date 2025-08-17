@@ -54,11 +54,11 @@ class WireGuardManager:
 
             # Парсим конфигурацию сервера
             lines = content.split("\n")
-            server_config = {}
-            clients = []
+            server_config: dict[str, str] = {}
+            clients: list[dict[str, str]] = []
 
             current_section = None
-            current_client = None
+            current_client: Optional[dict[str, str]] = None
 
             for line in lines:
                 line = line.strip()
@@ -476,7 +476,7 @@ PersistentKeepalive = 25
 
         return now - timedelta(seconds=total_seconds)
 
-    def _is_peer_connected(self, has_handshake: bool, handshake_time: datetime) -> bool:
+    def _is_peer_connected(self, has_handshake: bool, handshake_time: Optional[datetime]) -> bool:
         """Определяет, подключен ли peer согласно новой логике"""
         from datetime import datetime, timedelta
 
@@ -493,7 +493,7 @@ PersistentKeepalive = 25
         # 3. В остальных случаях - активен
         return True
 
-    def _restart_wireguard(self, interface: str):
+    def _restart_wireguard(self, interface: str) -> None:
         """Перезапускает WireGuard интерфейс"""
         try:
             # Останавливаем интерфейс

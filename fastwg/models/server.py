@@ -1,6 +1,6 @@
 import sqlite3
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
 
 
 @dataclass
@@ -18,7 +18,7 @@ class Server:
     config_path: str
 
     @classmethod
-    def create_table(cls, conn: sqlite3.Connection):
+    def create_table(cls, conn: sqlite3.Connection) -> None:
         """Создает таблицу сервера в базе данных"""
         cursor = conn.cursor()
         cursor.execute(
@@ -38,7 +38,7 @@ class Server:
         )
         conn.commit()
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Преобразует сервер в словарь"""
         return {
             "id": self.id,

@@ -4,18 +4,19 @@ Internationalization support for FastWG
 
 import gettext as gettext_module
 import os
+from typing import Optional
 
 
 class I18nManager:
     """Internationalization manager"""
 
-    def __init__(self, locale_dir: str = None):
+    def __init__(self, locale_dir: Optional[str] = None) -> None:
         self.locale_dir = locale_dir or os.path.join(os.path.dirname(os.path.dirname(__file__)), "locale")
         self.current_language = "en"
-        self._translation = None
+        self._translation: Optional[gettext_module.NullTranslations] = None
         self._setup_translation()
 
-    def _setup_translation(self):
+    def _setup_translation(self) -> None:
         """Setup translation based on environment"""
         # Get language from environment
         lang = os.environ.get("FASTWG_LANG", "en")
@@ -28,7 +29,7 @@ class I18nManager:
 
         self.set_language(lang)
 
-    def set_language(self, language: str):
+    def set_language(self, language: str) -> None:
         """Set current language"""
         self.current_language = language
 
@@ -70,7 +71,7 @@ def ngettext(singular: str, plural: str, n: int) -> str:
     return _i18n.ngettext(singular, plural, n)
 
 
-def set_language(language: str):
+def set_language(language: str) -> None:
     """Set current language"""
     _i18n.set_language(language)
 
