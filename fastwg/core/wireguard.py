@@ -1,3 +1,4 @@
+import base64
 import ipaddress
 import os
 import subprocess
@@ -300,22 +301,22 @@ class WireGuardManager:
         return result
 
     def _generate_private_key(self) -> str:
-        """Генерирует приватный ключ WireGuard"""
+        """Генерирует приватный ключ WireGuard в base64"""
         private_key = x25519.X25519PrivateKey.generate()
         private_bytes = private_key.private_bytes(
             encoding=serialization.Encoding.Raw,
             format=serialization.PrivateFormat.Raw,
             encryption_algorithm=serialization.NoEncryption(),
         )
-        return str(private_bytes.hex())
+        return base64.b64encode(private_bytes).decode("utf-8")
 
-    def _generate_public_key(self, private_key_hex: str) -> str:
-        """Генерирует публичный ключ из приватного"""
-        private_key_bytes = bytes.fromhex(private_key_hex)
+    def _generate_public_key(self, private_key_base64: str) -> str:
+        """Генерирует публичный ключ из приватного в base64"""
+        private_key_bytes = base64.b64decode(private_key_base64)
         private_key = x25519.X25519PrivateKey.from_private_bytes(private_key_bytes)
         public_key = private_key.public_key()
         public_bytes = public_key.public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
-        return str(public_bytes.hex())
+        return base64.b64encode(public_bytes).decode("utf-8")
 
     def _get_next_ip(self) -> str:
         """Получает следующий свободный IP адрес"""
