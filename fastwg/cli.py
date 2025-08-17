@@ -57,108 +57,108 @@ def scan(config_dir):
 @cli.command()
 @click.argument('name')
 def create(name):
-    """Создает нового клиента"""
-    click.echo(f"{Fore.YELLOW}Создание клиента '{name}'...{Style.RESET_ALL}")
+    """Create new client"""
+    click.echo(f"{Fore.YELLOW}{_('Creating client {}...').format(name)}{Style.RESET_ALL}")
     
     wg = WireGuardManager()
     client = wg.create_client(name)
     
     if client:
-        click.echo(f"{Fore.GREEN}✓ Клиент '{name}' успешно создан{Style.RESET_ALL}")
-        click.echo(f"  IP адрес: {client.ip_address}")
-        click.echo(f"  Конфигурация: ./wireguard/configs/{name}.conf")
+        click.echo(f"{Fore.GREEN}{_('✓ Client {} successfully created').format(name)}{Style.RESET_ALL}")
+        click.echo(f"  {_('IP address')}: {client.ip_address}")
+        click.echo(f"  {_('Configuration')}: ./wireguard/configs/{name}.conf")
     else:
-        click.echo(f"{Fore.RED}✗ Ошибка создания клиента '{name}'{Style.RESET_ALL}")
+        click.echo(f"{Fore.RED}{_('✗ Error creating client {}').format(name)}{Style.RESET_ALL}")
 
 
 @cli.command()
 @click.argument('name')
 def delete(name):
-    """Удаляет клиента"""
-    if not click.confirm(f"Удалить клиента '{name}'?"):
+    """Delete client"""
+    if not click.confirm(_("Delete client '{}'?").format(name)):
         return
     
-    click.echo(f"{Fore.YELLOW}Удаление клиента '{name}'...{Style.RESET_ALL}")
+    click.echo(f"{Fore.YELLOW}{_('Deleting client {}...').format(name)}{Style.RESET_ALL}")
     
     wg = WireGuardManager()
     if wg.delete_client(name):
-        click.echo(f"{Fore.GREEN}✓ Клиент '{name}' успешно удален{Style.RESET_ALL}")
+        click.echo(f"{Fore.GREEN}{_('✓ Client {} successfully deleted').format(name)}{Style.RESET_ALL}")
     else:
-        click.echo(f"{Fore.RED}✗ Ошибка удаления клиента '{name}'{Style.RESET_ALL}")
+        click.echo(f"{Fore.RED}{_('✗ Error deleting client {}').format(name)}{Style.RESET_ALL}")
 
 
 @cli.command()
 @click.argument('name')
 def disable(name):
-    """Блокирует клиента"""
-    click.echo(f"{Fore.YELLOW}Блокировка клиента '{name}'...{Style.RESET_ALL}")
+    """Disable client"""
+    click.echo(f"{Fore.YELLOW}{_('Disabling client {}...').format(name)}{Style.RESET_ALL}")
     
     wg = WireGuardManager()
     if wg.disable_client(name):
-        click.echo(f"{Fore.GREEN}✓ Клиент '{name}' заблокирован{Style.RESET_ALL}")
+        click.echo(f"{Fore.GREEN}{_('✓ Client {} disabled').format(name)}{Style.RESET_ALL}")
     else:
-        click.echo(f"{Fore.RED}✗ Ошибка блокировки клиента '{name}'{Style.RESET_ALL}")
+        click.echo(f"{Fore.RED}{_('✗ Error disabling client {}').format(name)}{Style.RESET_ALL}")
 
 
 @cli.command()
 @click.argument('name')
 def enable(name):
-    """Разблокирует клиента"""
-    click.echo(f"{Fore.YELLOW}Разблокировка клиента '{name}'...{Style.RESET_ALL}")
+    """Enable client"""
+    click.echo(f"{Fore.YELLOW}{_('Enabling client {}...').format(name)}{Style.RESET_ALL}")
     
     wg = WireGuardManager()
     if wg.enable_client(name):
-        click.echo(f"{Fore.GREEN}✓ Клиент '{name}' разблокирован{Style.RESET_ALL}")
+        click.echo(f"{Fore.GREEN}{_('✓ Client {} enabled').format(name)}{Style.RESET_ALL}")
     else:
-        click.echo(f"{Fore.RED}✗ Ошибка разблокировки клиента '{name}'{Style.RESET_ALL}")
+        click.echo(f"{Fore.RED}{_('✗ Error enabling client {}').format(name)}{Style.RESET_ALL}")
 
 
 @cli.command()
 @click.argument('name')
 def cat(name):
-    """Показывает конфигурацию клиента"""
+    """Show client configuration"""
     wg = WireGuardManager()
     config = wg.get_client_config(name)
     
     if config:
-        click.echo(f"{Fore.CYAN}Конфигурация клиента '{name}':{Style.RESET_ALL}")
+        click.echo(f"{Fore.CYAN}{_('Client {} configuration:').format(name)}{Style.RESET_ALL}")
         click.echo("=" * 50)
         click.echo(config)
     else:
-        click.echo(f"{Fore.RED}Клиент '{name}' не найден или конфигурация отсутствует{Style.RESET_ALL}")
+        click.echo(f"{Fore.RED}{_('Client {} not found or configuration missing').format(name)}{Style.RESET_ALL}")
 
 
 @cli.command()
 def list():
-    """Показывает список всех клиентов"""
+    """Show list of all clients"""
     wg = WireGuardManager()
     clients = wg.list_clients()
     
     if not clients:
-        click.echo(f"{Fore.YELLOW}Клиенты не найдены{Style.RESET_ALL}")
+        click.echo(f"{Fore.YELLOW}{_('No clients found')}{Style.RESET_ALL}")
         return
     
-    # Подготавливаем данные для таблицы
+    # Prepare table data
     table_data = []
     for client in clients:
         status = []
         if client['is_active']:
-            status.append(f"{Fore.GREEN}Активен{Style.RESET_ALL}")
+            status.append(f"{Fore.GREEN}{_('Active')}{Style.RESET_ALL}")
         else:
-            status.append(f"{Fore.RED}Неактивен{Style.RESET_ALL}")
+            status.append(f"{Fore.RED}{_('Inactive')}{Style.RESET_ALL}")
         
         if client['is_blocked']:
-            status.append(f"{Fore.RED}Заблокирован{Style.RESET_ALL}")
+            status.append(f"{Fore.RED}{_('Blocked')}{Style.RESET_ALL}")
         
         if client['is_connected']:
-            status.append(f"{Fore.GREEN}Подключен{Style.RESET_ALL}")
+            status.append(f"{Fore.GREEN}{_('Connected')}{Style.RESET_ALL}")
         else:
-            status.append(f"{Fore.YELLOW}Отключен{Style.RESET_ALL}")
+            status.append(f"{Fore.YELLOW}{_('Disconnected')}{Style.RESET_ALL}")
         
         status_str = ", ".join(status)
         
-        last_seen = client['last_seen'].strftime('%Y-%m-%d %H:%M:%S') if client['last_seen'] else 'Никогда'
-        created_at = client['created_at'].strftime('%Y-%m-%d %H:%M:%S') if client['created_at'] else 'Неизвестно'
+        last_seen = client['last_seen'].strftime('%Y-%m-%d %H:%M:%S') if client['last_seen'] else _('Never')
+        created_at = client['created_at'].strftime('%Y-%m-%d %H:%M:%S') if client['created_at'] else _('Unknown')
         
         table_data.append([
             client['name'],
@@ -168,28 +168,28 @@ def list():
             created_at
         ])
     
-    headers = ['Имя', 'IP адрес', 'Статус', 'Последнее подключение', 'Создан']
+    headers = [_('Name'), _('IP Address'), _('Status'), _('Last Connection'), _('Created')]
     click.echo(tabulate(table_data, headers=headers, tablefmt='grid'))
 
 
 @cli.command()
 def status():
-    """Показывает статус WireGuard сервера"""
+    """Show WireGuard server status"""
     wg = WireGuardManager()
     
-    # Проверяем статус WireGuard
+    # Check WireGuard status
     try:
         import subprocess
         result = subprocess.run(['wg', 'show'], capture_output=True, text=True)
         
         if result.returncode == 0:
-            click.echo(f"{Fore.GREEN}✓ WireGuard активен{Style.RESET_ALL}")
-            click.echo("\nАктивные интерфейсы:")
+            click.echo(f"{Fore.GREEN}{_('✓ WireGuard is active')}{Style.RESET_ALL}")
+            click.echo(f"\n{_('Active interfaces')}:")
             click.echo(result.stdout)
         else:
-            click.echo(f"{Fore.RED}✗ WireGuard не активен{Style.RESET_ALL}")
+            click.echo(f"{Fore.RED}{_('✗ WireGuard is not active')}{Style.RESET_ALL}")
     except FileNotFoundError:
-        click.echo(f"{Fore.RED}✗ WireGuard не установлен{Style.RESET_ALL}")
+        click.echo(f"{Fore.RED}{_('✗ WireGuard is not installed')}{Style.RESET_ALL}")
 
 
 if __name__ == '__main__':

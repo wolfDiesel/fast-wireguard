@@ -46,80 +46,132 @@ msgid "✗ Import error: {}"
 msgstr "✗ Ошибка импорта: {}"
 
 #: fastwg/cli.py:59
-msgid "Creating client '{}'..."
-msgstr "Создание клиента '{}'..."
+msgid "Creating client {}..."
+msgstr "Создание клиента {}..."
 
 #: fastwg/cli.py:65
-msgid "✓ Client '{}' successfully created"
-msgstr "✓ Клиент '{}' успешно создан"
+msgid "✓ Client {} successfully created"
+msgstr "✓ Клиент {} успешно создан"
 
 #: fastwg/cli.py:66
-msgid "  IP address: {}"
-msgstr "  IP адрес: {}"
+msgid "IP address"
+msgstr "IP адрес"
 
 #: fastwg/cli.py:67
-msgid "  Configuration: ./wireguard/configs/{}.conf"
-msgstr "  Конфигурация: ./wireguard/configs/{}.conf"
+msgid "Configuration"
+msgstr "Конфигурация"
 
 #: fastwg/cli.py:69
-msgid "✗ Error creating client '{}'"
-msgstr "✗ Ошибка создания клиента '{}'"
+msgid "✗ Error creating client {}"
+msgstr "✗ Ошибка создания клиента {}"
+
+#: fastwg/cli.py:77
+msgid "Delete client '{}'?"
+msgstr "Удалить клиента '{}'?"
 
 #: fastwg/cli.py:79
-msgid "Deleting client '{}'..."
-msgstr "Удаление клиента '{}'..."
+msgid "Deleting client {}..."
+msgstr "Удаление клиента {}..."
 
 #: fastwg/cli.py:83
-msgid "✓ Client '{}' successfully deleted"
-msgstr "✓ Клиент '{}' успешно удален"
+msgid "✓ Client {} successfully deleted"
+msgstr "✓ Клиент {} успешно удален"
 
 #: fastwg/cli.py:85
-msgid "✗ Error deleting client '{}'"
-msgstr "✗ Ошибка удаления клиента '{}'"
+msgid "✗ Error deleting client {}"
+msgstr "✗ Ошибка удаления клиента {}"
 
 #: fastwg/cli.py:92
-msgid "Disabling client '{}'..."
-msgstr "Блокировка клиента '{}'..."
+msgid "Disabling client {}..."
+msgstr "Блокировка клиента {}..."
 
 #: fastwg/cli.py:96
-msgid "✓ Client '{}' disabled"
-msgstr "✓ Клиент '{}' заблокирован"
+msgid "✓ Client {} disabled"
+msgstr "✓ Клиент {} заблокирован"
 
 #: fastwg/cli.py:98
-msgid "✗ Error disabling client '{}'"
-msgstr "✗ Ошибка блокировки клиента '{}'"
+msgid "✗ Error disabling client {}"
+msgstr "✗ Ошибка блокировки клиента {}"
 
 #: fastwg/cli.py:105
-msgid "Enabling client '{}'..."
-msgstr "Разблокировка клиента '{}'..."
+msgid "Enabling client {}..."
+msgstr "Разблокировка клиента {}..."
 
 #: fastwg/cli.py:109
-msgid "✓ Client '{}' enabled"
-msgstr "✓ Клиент '{}' разблокирован"
+msgid "✓ Client {} enabled"
+msgstr "✓ Клиент {} разблокирован"
 
 #: fastwg/cli.py:111
-msgid "✗ Error enabling client '{}'"
-msgstr "✗ Ошибка разблокировки клиента '{}'"
+msgid "✗ Error enabling client {}"
+msgstr "✗ Ошибка разблокировки клиента {}"
 
 #: fastwg/cli.py:122
-msgid "Client '{}' configuration:"
-msgstr "Конфигурация клиента '{}':"
+msgid "Client {} configuration:"
+msgstr "Конфигурация клиента {}:"
 
 #: fastwg/cli.py:126
-msgid "Client '{}' not found or configuration missing"
-msgstr "Клиент '{}' не найден или конфигурация отсутствует"
+msgid "Client {} not found or configuration missing"
+msgstr "Клиент {} не найден или конфигурация отсутствует"
 
 #: fastwg/cli.py:136
 msgid "No clients found"
 msgstr "Клиенты не найдены"
+
+#: fastwg/cli.py:140
+msgid "Active"
+msgstr "Активен"
+
+#: fastwg/cli.py:142
+msgid "Inactive"
+msgstr "Неактивен"
+
+#: fastwg/cli.py:146
+msgid "Blocked"
+msgstr "Заблокирован"
+
+#: fastwg/cli.py:150
+msgid "Connected"
+msgstr "Подключен"
+
+#: fastwg/cli.py:152
+msgid "Disconnected"
+msgstr "Отключен"
+
+#: fastwg/cli.py:156
+msgid "Never"
+msgstr "Никогда"
+
+#: fastwg/cli.py:156
+msgid "Unknown"
+msgstr "Неизвестно"
+
+#: fastwg/cli.py:161
+msgid "Name"
+msgstr "Имя"
+
+#: fastwg/cli.py:161
+msgid "IP Address"
+msgstr "IP адрес"
+
+#: fastwg/cli.py:161
+msgid "Status"
+msgstr "Статус"
+
+#: fastwg/cli.py:161
+msgid "Last Connection"
+msgstr "Последнее подключение"
+
+#: fastwg/cli.py:161
+msgid "Created"
+msgstr "Создан"
 
 #: fastwg/cli.py:184
 msgid "✓ WireGuard is active"
 msgstr "✓ WireGuard активен"
 
 #: fastwg/cli.py:185
-msgid "Active interfaces:"
-msgstr "Активные интерфейсы:"
+msgid "Active interfaces"
+msgstr "Активные интерфейсы"
 
 #: fastwg/cli.py:188
 msgid "✗ WireGuard is not active"
