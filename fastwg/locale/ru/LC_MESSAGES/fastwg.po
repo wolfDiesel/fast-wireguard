@@ -1,0 +1,206 @@
+# Russian translation for FastWG
+# Copyright (C) 2024 wolfDiesel
+# This file is distributed under the same license as the FastWG package.
+# wolfDiesel <>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: FastWG 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-15 15:00+0000\n"
+"PO-Revision-Date: 2024-01-15 15:00+0000\n"
+"Last-Translator: wolfDiesel <>\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: fastwg/cli.py:17
+msgid "Error: Root privileges required for WireGuard operations"
+msgstr "Ошибка: Требуются root привилегии для работы с WireGuard"
+
+#: fastwg/cli.py:18
+msgid "Run the command with sudo"
+msgstr "Запустите команду с sudo"
+
+#: fastwg/cli.py:33
+msgid "Scanning existing configurations..."
+msgstr "Сканирование существующих конфигураций..."
+
+#: fastwg/cli.py:39
+msgid "No existing configurations found"
+msgstr "Существующие конфигурации не найдены"
+
+#: fastwg/cli.py:42
+msgid "Found configurations: {}"
+msgstr "Найдено конфигураций: {}"
+
+#: fastwg/cli.py:50
+msgid "✓ Imported: {}"
+msgstr "✓ Импортирована: {}"
+
+#: fastwg/cli.py:52
+msgid "✗ Import error: {}"
+msgstr "✗ Ошибка импорта: {}"
+
+#: fastwg/cli.py:59
+msgid "Creating client '{}'..."
+msgstr "Создание клиента '{}'..."
+
+#: fastwg/cli.py:65
+msgid "✓ Client '{}' successfully created"
+msgstr "✓ Клиент '{}' успешно создан"
+
+#: fastwg/cli.py:66
+msgid "  IP address: {}"
+msgstr "  IP адрес: {}"
+
+#: fastwg/cli.py:67
+msgid "  Configuration: ./wireguard/configs/{}.conf"
+msgstr "  Конфигурация: ./wireguard/configs/{}.conf"
+
+#: fastwg/cli.py:69
+msgid "✗ Error creating client '{}'"
+msgstr "✗ Ошибка создания клиента '{}'"
+
+#: fastwg/cli.py:79
+msgid "Deleting client '{}'..."
+msgstr "Удаление клиента '{}'..."
+
+#: fastwg/cli.py:83
+msgid "✓ Client '{}' successfully deleted"
+msgstr "✓ Клиент '{}' успешно удален"
+
+#: fastwg/cli.py:85
+msgid "✗ Error deleting client '{}'"
+msgstr "✗ Ошибка удаления клиента '{}'"
+
+#: fastwg/cli.py:92
+msgid "Disabling client '{}'..."
+msgstr "Блокировка клиента '{}'..."
+
+#: fastwg/cli.py:96
+msgid "✓ Client '{}' disabled"
+msgstr "✓ Клиент '{}' заблокирован"
+
+#: fastwg/cli.py:98
+msgid "✗ Error disabling client '{}'"
+msgstr "✗ Ошибка блокировки клиента '{}'"
+
+#: fastwg/cli.py:105
+msgid "Enabling client '{}'..."
+msgstr "Разблокировка клиента '{}'..."
+
+#: fastwg/cli.py:109
+msgid "✓ Client '{}' enabled"
+msgstr "✓ Клиент '{}' разблокирован"
+
+#: fastwg/cli.py:111
+msgid "✗ Error enabling client '{}'"
+msgstr "✗ Ошибка разблокировки клиента '{}'"
+
+#: fastwg/cli.py:122
+msgid "Client '{}' configuration:"
+msgstr "Конфигурация клиента '{}':"
+
+#: fastwg/cli.py:126
+msgid "Client '{}' not found or configuration missing"
+msgstr "Клиент '{}' не найден или конфигурация отсутствует"
+
+#: fastwg/cli.py:136
+msgid "No clients found"
+msgstr "Клиенты не найдены"
+
+#: fastwg/cli.py:184
+msgid "✓ WireGuard is active"
+msgstr "✓ WireGuard активен"
+
+#: fastwg/cli.py:185
+msgid "Active interfaces:"
+msgstr "Активные интерфейсы:"
+
+#: fastwg/cli.py:188
+msgid "✗ WireGuard is not active"
+msgstr "✗ WireGuard не активен"
+
+#: fastwg/cli.py:190
+msgid "✗ WireGuard is not installed"
+msgstr "✗ WireGuard не установлен"
+
+#: fastwg/core/wireguard.py:47
+msgid "Error reading {}: {}"
+msgstr "Ошибка чтения {}: {}"
+
+#: fastwg/core/wireguard.py:133
+msgid "Configuration import error: {}"
+msgstr "Ошибка импорта конфигурации: {}"
+
+#: fastwg/core/wireguard.py:140
+msgid "Client {} already exists"
+msgstr "Клиент {} уже существует"
+
+#: fastwg/core/wireguard.py:171
+msgid "Error creating client {}"
+msgstr "Ошибка создания клиента {}"
+
+#: fastwg/core/wireguard.py:178
+msgid "Client {} not found"
+msgstr "Клиент {} не найден"
+
+#: fastwg/core/wireguard.py:300
+msgid "Server configuration not found"
+msgstr "Конфигурация сервера не найдена"
+
+#: fastwg/core/wireguard.py:380
+msgid "Error removing peer: {}"
+msgstr "Ошибка удаления peer: {}"
+
+#: fastwg/core/wireguard.py:394
+msgid "Error getting active connections: {}"
+msgstr "Ошибка получения активных подключений: {}"
+
+#: fastwg/core/wireguard.py:406
+msgid "Error restarting WireGuard: {}"
+msgstr "Ошибка перезапуска WireGuard: {}"
+
+#: fastwg/cli.py:15
+msgid "Check for root privileges"
+msgstr "Проверяет наличие root привилегий"
+
+#: fastwg/cli.py:25
+msgid "FastWG - Fast WireGuard server management"
+msgstr "FastWG - Быстрое управление WireGuard сервером"
+
+#: fastwg/cli.py:32
+msgid "Scan existing WireGuard configurations"
+msgstr "Сканирует существующие конфигурации WireGuard"
+
+#: fastwg/cli.py:58
+msgid "Create new client"
+msgstr "Создает нового клиента"
+
+#: fastwg/cli.py:75
+msgid "Delete client"
+msgstr "Удаляет клиента"
+
+#: fastwg/cli.py:91
+msgid "Disable client"
+msgstr "Блокирует клиента"
+
+#: fastwg/cli.py:104
+msgid "Enable client"
+msgstr "Разблокирует клиента"
+
+#: fastwg/cli.py:117
+msgid "Show client configuration"
+msgstr "Показывает конфигурацию клиента"
+
+#: fastwg/cli.py:131
+msgid "Show list of all clients"
+msgstr "Показывает список всех клиентов"
+
+#: fastwg/cli.py:175
+msgid "Show WireGuard server status"
+msgstr "Показывает статус WireGuard сервера"

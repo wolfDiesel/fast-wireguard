@@ -7,50 +7,51 @@ from colorama import init, Fore, Style
 from tabulate import tabulate
 from datetime import datetime
 from .core.wireguard import WireGuardManager
+from .utils.i18n import gettext as _
 
 # Инициализация colorama для цветного вывода
 init(autoreset=True)
 
 
 def check_root_privileges():
-    """Проверяет наличие root привилегий"""
+    """Check for root privileges"""
     if os.geteuid() != 0:
-        click.echo(f"{Fore.RED}Ошибка: Требуются root привилегии для работы с WireGuard{Style.RESET_ALL}")
-        click.echo("Запустите команду с sudo")
+        click.echo(f"{Fore.RED}{_('Error: Root privileges required for WireGuard operations')}{Style.RESET_ALL}")
+        click.echo(_("Run the command with sudo"))
         sys.exit(1)
 
 
 @click.group()
 @click.version_option(version="1.0.0", prog_name="fastwg")
 def cli():
-    """FastWG - Быстрое управление WireGuard сервером"""
+    """FastWG - Fast WireGuard server management"""
     check_root_privileges()
 
 
 @cli.command()
-@click.option('--config-dir', default='/etc/wireguard', help='Директория конфигураций WireGuard')
+@click.option('--config-dir', default='/etc/wireguard', help='WireGuard configuration directory')
 def scan(config_dir):
-    """Сканирует существующие конфигурации WireGuard"""
-    click.echo(f"{Fore.YELLOW}Сканирование существующих конфигураций...{Style.RESET_ALL}")
+    """Scan existing WireGuard configurations"""
+    click.echo(f"{Fore.YELLOW}{_('Scanning existing configurations...')}{Style.RESET_ALL}")
     
     wg = WireGuardManager(config_dir)
     existing_configs = wg.scan_existing_configs()
     
     if not existing_configs:
-        click.echo(f"{Fore.GREEN}Существующие конфигурации не найдены{Style.RESET_ALL}")
+        click.echo(f"{Fore.GREEN}{_('No existing configurations found')}{Style.RESET_ALL}")
         return
     
-    click.echo(f"{Fore.GREEN}Найдено конфигураций: {len(existing_configs)}{Style.RESET_ALL}")
+    click.echo(f"{Fore.GREEN}{_('Found configurations: {}').format(len(existing_configs))}{Style.RESET_ALL}")
     
     for config in existing_configs:
         click.echo(f"  - {config['filename']} ({config['path']})")
     
-    if click.confirm("Импортировать найденные конфигурации?"):
+    if click.confirm(_("Import found configurations?")):
         for config in existing_configs:
             if wg.import_existing_config(config['path']):
-                click.echo(f"{Fore.GREEN}✓ Импортирована: {config['filename']}{Style.RESET_ALL}")
+                click.echo(f"{Fore.GREEN}{_('✓ Imported: {}').format(config['filename'])}{Style.RESET_ALL}")
             else:
-                click.echo(f"{Fore.RED}✗ Ошибка импорта: {config['filename']}{Style.RESET_ALL}")
+                click.echo(f"{Fore.RED}{_('✗ Import error: {}').format(config['filename'])}{Style.RESET_ALL}")
 
 
 @cli.command()
