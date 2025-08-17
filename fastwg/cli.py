@@ -239,14 +239,14 @@ def reload() -> None:
 
 
 @cli.command()
-@click.argument("external_ip")
-def set_external_ip(external_ip: str) -> None:
-    """Set external IP address for WireGuard server"""
+@click.argument("host")
+def sethost(host: str) -> None:
+    """Set external host (IP:port) for WireGuard server"""
     wg_manager = WireGuardManager()
-    if wg_manager.set_external_ip(external_ip):
-        click.echo(f"{Fore.GREEN}{_('✓ External IP set successfully')}{Style.RESET_ALL}")
+    if wg_manager.set_host(host):
+        click.echo(f"{Fore.GREEN}{_('✓ Host set successfully')}{Style.RESET_ALL}")
     else:
-        click.echo(f"{Fore.RED}{_('✗ Failed to set external IP')}{Style.RESET_ALL}")
+        click.echo(f"{Fore.RED}{_('✗ Failed to set host')}{Style.RESET_ALL}")
 
 
 if __name__ == "__main__":

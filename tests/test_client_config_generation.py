@@ -76,7 +76,7 @@ class TestClientConfigGeneration(unittest.TestCase):
             self.assertIn("DNS = 8.8.8.8", written_content)
 
     def test_create_client_config_without_external_ip(self):
-        """Test that client config falls back to internal IP when external IP is not set"""
+        """Test that client config fails when external IP is not set"""
         # Mock server configuration without external IP
         server_config = Server(
             id=1,
@@ -109,31 +109,20 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.get_server_config.return_value = server_config
         self.mock_db.save_server_config.return_value = True
 
-        # Mock file operations
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
-            mock_file = MagicMock()
-            mock_open.return_value.__enter__.return_value = mock_file
-
+        # Mock print function to capture output
+        with patch("builtins.print") as mock_print:
             # Call the method that generates client config
-            self.wg_manager._create_client_config(client)
+            result = self.wg_manager._create_client_config(client)
 
-            # Verify files were opened for writing (private key, public key, config)
-            self.assertEqual(mock_open.call_count, 3)
-
-            # Get the written content from the last call (config file)
-            written_content = mock_file.write.call_args_list[-1][0][0]
-
-            # Verify the config falls back to internal IP
-            self.assertIn("Endpoint = 10.42.42.1:51820", written_content)
-
-            # Verify other required fields
-            self.assertIn("PrivateKey = client_private_key_base64", written_content)
-            self.assertIn("Address = 10.42.42.9/24", written_content)
-            self.assertIn("PublicKey = server_public_key_base64", written_content)
-            self.assertIn("DNS = 8.8.8.8", written_content)
+            # Verify that it returns empty string (error)
+            self.assertEqual(result, "")
+            
+            # Verify error message was printed
+            mock_print.assert_any_call("Ошибка: внешний IP сервера не установлен")
+            mock_print.assert_any_call("Используйте команду: fastwg sethost <ip:port>")
 
     def test_create_client_config_with_empty_external_ip(self):
-        """Test that client config falls back to internal IP when external IP is empty string"""
+        """Test that client config fails when external IP is empty string"""
         # Mock server configuration with empty external IP
         server_config = Server(
             id=1,
@@ -166,22 +155,17 @@ class TestClientConfigGeneration(unittest.TestCase):
         self.mock_db.get_server_config.return_value = server_config
         self.mock_db.save_server_config.return_value = True
 
-        # Mock file operations
-        with patch("builtins.open", create=True) as mock_open, patch("os.chmod"):
-            mock_file = MagicMock()
-            mock_open.return_value.__enter__.return_value = mock_file
-
+        # Mock print function to capture output
+        with patch("builtins.print") as mock_print:
             # Call the method that generates client config
-            self.wg_manager._create_client_config(client)
+            result = self.wg_manager._create_client_config(client)
 
-            # Verify files were opened for writing (private key, public key, config)
-            self.assertEqual(mock_open.call_count, 3)
-
-            # Get the written content from the last call (config file)
-            written_content = mock_file.write.call_args_list[-1][0][0]
-
-            # Verify the config falls back to internal IP
-            self.assertIn("Endpoint = 10.42.42.1:51820", written_content)
+            # Verify that it returns empty string (error)
+            self.assertEqual(result, "")
+            
+            # Verify error message was printed
+            mock_print.assert_any_call("Ошибка: внешний IP сервера не установлен")
+            mock_print.assert_any_call("Используйте команду: fastwg sethost <ip:port>")
 
     def test_create_client_config_with_different_port(self):
         """Test that client config uses correct port from server config"""
@@ -352,6 +336,131 @@ class TestClientConfigGeneration(unittest.TestCase):
 
             # Verify config ends with newline
             self.assertTrue(written_content.endswith("\n"))
+
+    def test_set_host_valid(self):
+        """Test setting host with valid IP:port"""
+        # Mock server configuration
+        server_config = Server(
+            id=1,
+            interface="wg0",
+            private_key="server_private_key_base64",
+            public_key="server_public_key_base64",
+            address="10.42.42.1/24",
+            port=51820,
+            dns="8.8.8.8",
+            mtu=1420,
+            config_path="/etc/wireguard/wg0.conf",
+            external_ip=None,
+        )
+
+        # Mock database methods
+        self.mock_db.get_server_config.return_value = server_config
+        self.mock_db.save_server_config.return_value = True
+
+        # Mock print function to capture output
+        with patch("builtins.print") as mock_print:
+            # Call the method that sets host
+            result = self.wg_manager.set_host("192.168.1.100:51821")
+
+            # Verify that it returns True (success)
+            self.assertTrue(result)
+            
+            # Verify success message was printed
+            mock_print.assert_any_call("✓ Внешний хост сервера установлен: 192.168.1.100:51821")
+            
+            # Verify that server config was updated
+            self.assertEqual(server_config.external_ip, "192.168.1.100")
+            self.assertEqual(server_config.port, 51821)
+
+    def test_set_host_invalid_format(self):
+        """Test setting host with invalid format"""
+        # Mock server configuration
+        server_config = Server(
+            id=1,
+            interface="wg0",
+            private_key="server_private_key_base64",
+            public_key="server_public_key_base64",
+            address="10.42.42.1/24",
+            port=51820,
+            dns="8.8.8.8",
+            mtu=1420,
+            config_path="/etc/wireguard/wg0.conf",
+            external_ip=None,
+        )
+
+        # Mock database methods
+        self.mock_db.get_server_config.return_value = server_config
+
+        # Mock print function to capture output
+        with patch("builtins.print") as mock_print:
+            # Call the method that sets host
+            result = self.wg_manager.set_host("192.168.1.100")
+
+            # Verify that it returns False (error)
+            self.assertFalse(result)
+            
+            # Verify error message was printed
+            mock_print.assert_any_call("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
+
+    def test_set_host_invalid_ip(self):
+        """Test setting host with invalid IP"""
+        # Mock server configuration
+        server_config = Server(
+            id=1,
+            interface="wg0",
+            private_key="server_private_key_base64",
+            public_key="server_public_key_base64",
+            address="10.42.42.1/24",
+            port=51820,
+            dns="8.8.8.8",
+            mtu=1420,
+            config_path="/etc/wireguard/wg0.conf",
+            external_ip=None,
+        )
+
+        # Mock database methods
+        self.mock_db.get_server_config.return_value = server_config
+
+        # Mock print function to capture output
+        with patch("builtins.print") as mock_print:
+            # Call the method that sets host
+            result = self.wg_manager.set_host("invalid.ip:51820")
+
+            # Verify that it returns False (error)
+            self.assertFalse(result)
+            
+            # Verify error message was printed
+            mock_print.assert_any_call("Ошибка: неверный IP адрес: invalid.ip")
+
+    def test_set_host_invalid_port(self):
+        """Test setting host with invalid port"""
+        # Mock server configuration
+        server_config = Server(
+            id=1,
+            interface="wg0",
+            private_key="server_private_key_base64",
+            public_key="server_public_key_base64",
+            address="10.42.42.1/24",
+            port=51820,
+            dns="8.8.8.8",
+            mtu=1420,
+            config_path="/etc/wireguard/wg0.conf",
+            external_ip=None,
+        )
+
+        # Mock database methods
+        self.mock_db.get_server_config.return_value = server_config
+
+        # Mock print function to capture output
+        with patch("builtins.print") as mock_print:
+            # Call the method that sets host
+            result = self.wg_manager.set_host("192.168.1.100:99999")
+
+            # Verify that it returns False (error)
+            self.assertFalse(result)
+            
+            # Verify error message was printed
+            mock_print.assert_any_call("Ошибка: неверный порт: 99999")
 
 
 if __name__ == "__main__":

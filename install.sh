@@ -278,13 +278,38 @@ case "${1:-}" in
         ;;
     --uninstall)
         print_info "Удаление FastWG..."
+        
+        # Удаляем Python пакет
         pip3 uninstall -y fastwg
+        
+        # Удаляем исполняемые файлы
         rm -f /usr/local/bin/fastwg
         rm -f /usr/bin/fastwg
+        
+        # Удаляем systemd сервис
         systemctl disable fastwg.service 2>/dev/null || true
         rm -f /etc/systemd/system/fastwg.service
         systemctl daemon-reload
-        print_success "FastWG удален"
+        
+        # Удаляем конфигурационные файлы
+        print_info "Удаление конфигурационных файлов..."
+        rm -rf /etc/wireguard
+        rm -rf ./wireguard
+        
+        # Удаляем базу данных
+        print_info "Удаление базы данных..."
+        rm -f ./wireguard.db
+        rm -f /var/lib/fastwg/wireguard.db 2>/dev/null || true
+        
+        # Удаляем пустую директорию /var/lib/fastwg
+        if [[ -d "/var/lib/fastwg" ]] && [[ -z "$(ls -A /var/lib/fastwg)" ]]; then
+            rmdir /var/lib/fastwg
+        fi
+        
+        # Удаляем алиас
+        sed -i '/alias wg=fastwg/d' ~/.bashrc 2>/dev/null || true
+        
+        print_success "FastWG полностью удален"
         exit 0
         ;;
     *)

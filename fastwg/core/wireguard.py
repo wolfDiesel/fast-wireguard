@@ -402,8 +402,14 @@ AllowedIPs = {client.ip_address}/32
             print("Конфигурация сервера не найдена")
             return ""
 
-        # Получаем IP сервера (внешний IP или внутренний как fallback)
-        server_ip = server_config.external_ip if server_config.external_ip else server_config.address.split("/")[0]
+        # Проверяем что внешний IP сервера установлен
+        if not server_config.external_ip:
+            print("Ошибка: внешний IP сервера не установлен")
+            print("Используйте команду: fastwg sethost <ip:port>")
+            return ""
+        
+        # Получаем IP сервера из базы данных
+        server_ip = server_config.external_ip
 
         # Сохраняем приватный ключ клиента
         private_key_file = f"./wireguard/keys/{client.name}_private.key"
@@ -661,24 +667,49 @@ PersistentKeepalive = 15
             print(f"Ошибка перезагрузки конфигурации: {e}")
             return False
 
-    def set_external_ip(self, external_ip: str) -> bool:
-        """Устанавливает внешний IP сервера"""
+    def set_host(self, host: str) -> bool:
+        """Устанавливает внешний хост (IP:port) сервера"""
         try:
+            # Парсим IP и порт
+            if ":" not in host:
+                print("Ошибка: формат должен быть IP:port (например: 192.168.1.1:51820)")
+                return False
+            
+            external_ip, port_str = host.split(":", 1)
+            
+            # Проверяем IP
+            import ipaddress
+            try:
+                ipaddress.ip_address(external_ip)
+            except ValueError:
+                print(f"Ошибка: неверный IP адрес: {external_ip}")
+                return False
+            
+            # Проверяем порт
+            try:
+                port = int(port_str)
+                if port < 1 or port > 65535:
+                    raise ValueError("Port out of range")
+            except ValueError:
+                print(f"Ошибка: неверный порт: {port_str}")
+                return False
+            
             server_config = self.db.get_server_config()
             if not server_config:
                 print("Конфигурация сервера не найдена")
                 return False
 
-            # Обновляем внешний IP
+            # Обновляем внешний IP и порт
             server_config.external_ip = external_ip
+            server_config.port = port
             if self.db.save_server_config(server_config):
-                print(f"✓ Внешний IP сервера установлен: {external_ip}")
+                print(f"✓ Внешний хост сервера установлен: {external_ip}:{port}")
                 return True
             else:
-                print("✗ Ошибка сохранения внешнего IP")
+                print("✗ Ошибка сохранения внешнего хоста")
                 return False
         except Exception as e:
-            print(f"Ошибка установки внешнего IP: {e}")
+            print(f"Ошибка установки внешнего хоста: {e}")
             return False
 
     def _restart_wireguard(self, interface: str) -> bool:
