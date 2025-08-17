@@ -346,12 +346,12 @@ class WireGuardManager:
 
         raise Exception("Нет свободных IP адресов в сети")
 
-    def _update_server_config(self, restart: bool = False):
+    def _update_server_config(self, restart: bool = False) -> bool:
         """Обновляет конфигурацию сервера"""
         server_config = self.db.get_server_config()
         if not server_config:
             print("Конфигурация сервера не найдена")
-            return
+            return False
 
         # Получаем активных клиентов
         clients = [c for c in self.db.get_all_clients() if c.is_active and not c.is_blocked]
@@ -384,7 +384,10 @@ AllowedIPs = {client.ip_address}/32
 
         # Перезапускаем WireGuard только если явно запрошено
         if restart:
-            self._restart_wireguard(server_config.interface)
+            if not self._restart_wireguard(server_config.interface):
+                print("✗ Ошибка перезапуска WireGuard сервера")
+                return False
+        return True
 
     def _create_client_config(self, client: Client) -> str:
         """Создает конфигурационный файл для клиента и возвращает путь к файлу"""
@@ -642,18 +645,31 @@ PersistentKeepalive = 15
                 return False
 
             # Обновляем конфигурацию с перезапуском
-            self._update_server_config(restart=True)
-            return True
+            if self._update_server_config(restart=True):
+                print("✓ Configuration reloaded successfully")
+                return True
+            else:
+                print("✗ Configuration reload failed")
+                return False
         except Exception as e:
             print(f"Ошибка перезагрузки конфигурации: {e}")
             return False
 
-    def _restart_wireguard(self, interface: str) -> None:
+    def _restart_wireguard(self, interface: str) -> bool:
         """Перезапускает WireGuard интерфейс (внутренний метод)"""
         try:
             # Останавливаем интерфейс
-            subprocess.run(["wg-quick", "down", interface], check=False)
+            result_down = subprocess.run(["wg-quick", "down", interface], capture_output=True, text=True)
+            if result_down.returncode != 0 and "is not a WireGuard interface" not in result_down.stderr:
+                print(f"Предупреждение при остановке интерфейса: {result_down.stderr}")
+            
             # Запускаем интерфейс
-            subprocess.run(["wg-quick", "up", interface], check=False)
+            result_up = subprocess.run(["wg-quick", "up", interface], capture_output=True, text=True)
+            if result_up.returncode == 0:
+                return True
+            else:
+                print(f"✗ Ошибка запуска WireGuard интерфейса: {result_up.stderr}")
+                return False
         except Exception as e:
             print(f"Ошибка перезапуска WireGuard: {e}")
+            return False
