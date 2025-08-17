@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "Fast WireGuard server management via CLI"
 readme = "README.md"
 requires-python = ">=3.9"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "wolfDiesel", email = "wolfdiesel@example.com"}
 ]
@@ -16,7 +16,7 @@ keywords = ["wireguard", "vpn", "cli", "server", "management"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: MIT License",
+
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
