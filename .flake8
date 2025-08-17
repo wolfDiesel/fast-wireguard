@@ -1,0 +1,16 @@
+[flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.egg-info
+ignore = 
+    E402,
+    F401,
+    C901
+per-file-ignores =
+    fastwg/core/wireguard.py:F401,C901
+    tests/*:E402

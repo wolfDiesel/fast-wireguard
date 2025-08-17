@@ -6,6 +6,7 @@ from typing import Optional
 @dataclass
 class Server:
     """Модель сервера WireGuard"""
+
     id: Optional[int]
     interface: str
     private_key: str
@@ -15,12 +16,13 @@ class Server:
     dns: str
     mtu: int
     config_path: str
-    
+
     @classmethod
     def create_table(cls, conn: sqlite3.Connection):
         """Создает таблицу сервера в базе данных"""
         cursor = conn.cursor()
-        cursor.execute('''
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS server (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 interface TEXT UNIQUE NOT NULL,
@@ -32,19 +34,20 @@ class Server:
                 mtu INTEGER DEFAULT 1420,
                 config_path TEXT NOT NULL
             )
-        ''')
+        """
+        )
         conn.commit()
-    
+
     def to_dict(self):
         """Преобразует сервер в словарь"""
         return {
-            'id': self.id,
-            'interface': self.interface,
-            'private_key': self.private_key,
-            'public_key': self.public_key,
-            'address': self.address,
-            'port': self.port,
-            'dns': self.dns,
-            'mtu': self.mtu,
-            'config_path': self.config_path
+            "id": self.id,
+            "interface": self.interface,
+            "private_key": self.private_key,
+            "public_key": self.public_key,
+            "address": self.address,
+            "port": self.port,
+            "dns": self.dns,
+            "mtu": self.mtu,
+            "config_path": self.config_path,
         }

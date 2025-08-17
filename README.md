@@ -66,6 +66,7 @@ sudo fastwg cat myclient
 - [🔧 Installation Guide](docs/en/INSTALL.md)
 - [🎯 Usage Demo](docs/en/DEMO.md)
 - [🌐 Internationalization](docs/i18n/README.md)
+- [💻 Development Guide](docs/en/development.md)
 - [📦 GitHub Repository](https://github.com/wolfDiesel/fast-wireguard)
 - [🐛 Issues](https://github.com/wolfDiesel/fast-wireguard/issues)
 

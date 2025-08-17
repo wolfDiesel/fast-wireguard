@@ -5,7 +5,7 @@ import sys
 import os
 from colorama import init, Fore, Style
 from tabulate import tabulate
-from datetime import datetime
+
 from .core.wireguard import WireGuardManager
 from .utils.i18n import gettext as _
 
@@ -117,8 +117,8 @@ def enable(name):
 @click.argument('name')
 def cat(name):
     """Show client configuration"""
-    wg = WireGuardManager()
-    config = wg.get_client_config(name)
+    wg_manager = WireGuardManager()
+    config = wg_manager.get_client_config(name)
     
     if config:
         click.echo(f"{Fore.CYAN}{_('Client {} configuration:').format(name)}{Style.RESET_ALL}")
@@ -132,8 +132,8 @@ def cat(name):
 @click.option('--all', '-a', is_flag=True, help=_('Show all clients including inactive and blocked'))
 def list(all):
     """Show list of all clients"""
-    wg = WireGuardManager()
-    clients = wg.list_clients()
+    wg_manager = WireGuardManager()
+    clients = wg_manager.list_clients()
     
     if not clients:
         click.echo(f"{Fore.YELLOW}{_('No clients found')}{Style.RESET_ALL}")
@@ -189,7 +189,6 @@ def list(all):
 @cli.command()
 def status():
     """Show WireGuard server status"""
-    wg = WireGuardManager()
     
     # Check WireGuard status
     try:
