@@ -44,6 +44,7 @@ class TestDatabase(unittest.TestCase):
             is_active=True,
             is_blocked=False,
             last_seen=None,
+            config_path="./wireguard/configs/test_client.conf",
         )
 
         # Add client
@@ -76,6 +77,7 @@ class TestDatabase(unittest.TestCase):
             is_active=True,
             is_blocked=False,
             last_seen=None,
+            config_path="./wireguard/configs/client1.conf",
         )
         client2 = Client(
             id=2,
@@ -87,6 +89,7 @@ class TestDatabase(unittest.TestCase):
             is_active=True,
             is_blocked=False,
             last_seen=None,
+            config_path="./wireguard/configs/client2.conf",
         )
 
         self.db.add_client(client1)
@@ -116,6 +119,7 @@ class TestDatabase(unittest.TestCase):
             is_active=True,
             is_blocked=False,
             last_seen=None,
+            config_path="./wireguard/configs/to_delete.conf",
         )
         self.db.add_client(client)
 
@@ -141,6 +145,7 @@ class TestDatabase(unittest.TestCase):
             is_active=True,
             is_blocked=False,
             last_seen=None,
+            config_path="./wireguard/configs/test_client.conf",
         )
         self.db.add_client(client)
 
@@ -167,6 +172,7 @@ class TestDatabase(unittest.TestCase):
             is_active=True,
             is_blocked=False,
             last_seen=None,
+            config_path="./wireguard/configs/test_client.conf",
         )
         self.db.add_client(client)
 
@@ -225,6 +231,7 @@ class TestDatabase(unittest.TestCase):
             is_active=True,
             is_blocked=False,
             last_seen=None,
+            config_path="./wireguard/configs/test_client.conf",
         )
 
         client_dict = client.to_dict()

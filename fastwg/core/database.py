@@ -34,8 +34,8 @@ class Database:
 
             cursor.execute(
                 """
-                INSERT INTO clients (name, public_key, private_key, ip_address, created_at, is_active, is_blocked)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO clients (name, public_key, private_key, ip_address, created_at, is_active, is_blocked, config_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     client.name,
@@ -45,6 +45,7 @@ class Database:
                     client.created_at,
                     client.is_active,
                     client.is_blocked,
+                    client.config_path,
                 ),
             )
 
@@ -62,7 +63,7 @@ class Database:
 
         cursor.execute(
             """
-            SELECT id, name, public_key, private_key, ip_address, created_at, is_active, is_blocked, last_seen
+            SELECT id, name, public_key, private_key, ip_address, created_at, is_active, is_blocked, last_seen, config_path
             FROM clients WHERE name = ?
         """,
             (name,),
@@ -82,6 +83,7 @@ class Database:
                 is_active=bool(row[6]),
                 is_blocked=bool(row[7]),
                 last_seen=datetime.fromisoformat(row[8]) if row[8] else None,
+                config_path=row[9],
             )
         return None
 
@@ -92,7 +94,7 @@ class Database:
 
         cursor.execute(
             """
-            SELECT id, name, public_key, private_key, ip_address, created_at, is_active, is_blocked, last_seen
+            SELECT id, name, public_key, private_key, ip_address, created_at, is_active, is_blocked, last_seen, config_path
             FROM clients ORDER BY name
         """
         )
@@ -110,6 +112,7 @@ class Database:
                     is_active=bool(row[6]),
                     is_blocked=bool(row[7]),
                     last_seen=datetime.fromisoformat(row[8]) if row[8] else None,
+                    config_path=row[9],
                 )
             )
 

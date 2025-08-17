@@ -105,6 +105,7 @@ class TestIPAllocation(unittest.TestCase):
                 is_blocked=False,
                 created_at=datetime.now(),
                 last_seen=None,
+                config_path="./wireguard/configs/client1.conf",
             ),
             Client(
                 id=2,
@@ -116,6 +117,7 @@ class TestIPAllocation(unittest.TestCase):
                 is_blocked=False,
                 created_at=datetime.now(),
                 last_seen=None,
+                config_path="./wireguard/configs/client2.conf",
             ),
         ]
 
