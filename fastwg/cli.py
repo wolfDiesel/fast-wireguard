@@ -257,7 +257,7 @@ def sethost(host: str) -> None:
 def init(interface: str, port: int, network: str, dns: str) -> None:
     """Initialize WireGuard server configuration"""
     click.echo(f"{Fore.YELLOW}{_('Initializing WireGuard server configuration...')}{Style.RESET_ALL}")
-    
+
     wg_manager = WireGuardManager()
     if wg_manager.init_server_config(interface, port, network, dns):
         click.echo(f"{Fore.GREEN}{_('✓ Server configuration initialized successfully')}{Style.RESET_ALL}")
